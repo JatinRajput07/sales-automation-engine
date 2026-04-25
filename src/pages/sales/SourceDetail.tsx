@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -11,8 +11,10 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGri
 
 export default function SourceDetail() {
   const { id } = useParams();
-  const source = useSalesStore((s) => s.sources.find(x => x.id === id));
-  const leads = useSalesStore((s) => s.leads.filter(l => l.sourceAccountId === id));
+  const sources = useSalesStore((s) => s.sources);
+  const allLeads = useSalesStore((s) => s.leads);
+  const source = useMemo(() => sources.find(x => x.id === id), [sources, id]);
+  const leads = useMemo(() => allLeads.filter(l => l.sourceAccountId === id), [allLeads, id]);
   const [tab, setTab] = useState<"overview" | "leads" | "performance">("overview");
 
   if (!source) {

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, Linkedin, Building2 } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -9,14 +10,18 @@ import { inr } from "@/lib/mockData";
 export default function ContactDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const contact = useSalesStore(s => s.contacts.find(c => c.id === id));
-  const company = useSalesStore(s => s.companies.find(c => c.id === contact?.companyId));
+  const contacts = useSalesStore(s => s.contacts);
+  const companies = useSalesStore(s => s.companies);
+  const allLeads = useSalesStore(s => s.leads);
+  const allDeals = useSalesStore(s => s.deals);
+  const contact = useMemo(() => contacts.find(c => c.id === id), [contacts, id]);
+  const company = useMemo(() => companies.find(c => c.id === contact?.companyId), [companies, contact?.companyId]);
   // Match leads either by exact email OR by company name (broader linkage)
-  const leads = useSalesStore(s => s.leads.filter(l =>
+  const leads = useMemo(() => allLeads.filter(l =>
     (contact && l.email === contact.email) ||
     (company && l.company === company.name)
-  ));
-  const deals = useSalesStore(s => s.deals.filter(d => d.contactId === id || (company && d.companyId === company.id)));
+  ), [allLeads, contact, company]);
+  const deals = useMemo(() => allDeals.filter(d => d.contactId === id || (company && d.companyId === company.id)), [allDeals, id, company]);
 
   if (!contact) return <div className="p-6 text-sm">Contact not found. <Link to="/sales/contacts" className="text-primary">Back</Link></div>;
 
