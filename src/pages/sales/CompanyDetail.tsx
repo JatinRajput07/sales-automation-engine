@@ -79,7 +79,7 @@ export default function CompanyDetail() {
             {am ? (
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-sm bg-primary/15 text-primary flex items-center justify-center font-mono text-xs font-bold">{am.initials}</div>
-                <div><div className="text-xs font-medium">{am.name}</div><div className="text-2xs text-muted-foreground">{am.role}</div></div>
+                <div><div className="text-xs font-medium">{am.name}</div><div className="text-2xs text-muted-foreground">{am.dept}</div></div>
               </div>
             ) : <div className="text-2xs text-muted-foreground">Unassigned</div>}
           </div>
