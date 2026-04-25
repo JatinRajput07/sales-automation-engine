@@ -528,6 +528,25 @@ const seedAutomations: Automation[] = [
   { id: "au12", name: "Daily sales digest (9 AM)", category: "Notification", trigger: "Every day at 9:00 AM", action: "Send digest to each salesperson", enabled: true, lastTriggered: daysFromNow(0), runs: 90 },
 ];
 
+const seedPipelineStages: PipelineStageDef[] = [
+  { id: "ps1", name: "Discovery", probability: 10, color: "info" },
+  { id: "ps2", name: "Qualification", probability: 30, color: "purple" },
+  { id: "ps3", name: "Proposal", probability: 55, color: "warning" },
+  { id: "ps4", name: "Negotiation", probability: 75, color: "warning" },
+  { id: "ps5", name: "Closed Won", probability: 100, color: "success" },
+  { id: "ps6", name: "Closed Lost", probability: 0, color: "danger" },
+];
+
+const currentMonth = new Date().toISOString().slice(0, 7);
+const currentQuarter = `${new Date().getFullYear()}-Q${Math.floor(new Date().getMonth() / 3) + 1}`;
+const seedGoals: SalesGoal[] = [
+  { id: "g1", scope: "company", period: "monthly", periodLabel: currentMonth, target: 5000000, currency: "INR", achieved: 3200000 },
+  { id: "g2", scope: "company", period: "quarterly", periodLabel: currentQuarter, target: 15000000, currency: "INR", achieved: 9800000 },
+  { id: "g3", scope: "person", ownerId: "p2", period: "monthly", periodLabel: currentMonth, target: 1500000, currency: "INR", achieved: 1180000 },
+  { id: "g4", scope: "person", ownerId: "p10", period: "monthly", periodLabel: currentMonth, target: 1200000, currency: "INR", achieved: 980000 },
+  { id: "g5", scope: "person", ownerId: "p2", period: "quarterly", periodLabel: currentQuarter, target: 4500000, currency: "INR", achieved: 3100000 },
+];
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
@@ -536,11 +555,19 @@ interface SalesState {
   companies: Company[];
   contacts: Contact[];
   deals: Deal[];
+  goals: SalesGoal[];
+  pipelineStages: PipelineStageDef[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
   updateLead: (id: string, patch: Partial<Lead>) => void;
   setLeadStatus: (id: string, status: LeadStatus, byId?: string) => void;
+  addLeadNote: (leadId: string, text: string, byId?: string) => void;
+  addLeadAttachment: (leadId: string, att: Omit<Attachment, "id" | "uploadedAt">) => void;
+  removeLeadAttachment: (leadId: string, attId: string) => void;
+  addDealNote: (dealId: string, text: string, byId?: string) => void;
+  addDealAttachment: (dealId: string, att: Omit<Attachment, "id" | "uploadedAt">) => void;
+  removeDealAttachment: (dealId: string, attId: string) => void;
   logActivity: (a: Omit<Activity, "id">) => string;
   addTask: (t: Omit<SalesTask, "id">) => string;
   setTaskStatus: (id: string, status: SalesTask["status"]) => void;
@@ -558,6 +585,12 @@ interface SalesState {
   updateProposal: (id: string, patch: Partial<Proposal>) => void;
   setProposalStatus: (id: string, status: ProposalStatus) => void;
   toggleAutomation: (id: string) => void;
+  addAutomation: (a: Omit<Automation, "id" | "runs">) => string;
+  removeAutomation: (id: string) => void;
+  addGoal: (g: Omit<SalesGoal, "id">) => string;
+  updateGoal: (id: string, patch: Partial<SalesGoal>) => void;
+  removeGoal: (id: string) => void;
+  setPipelineStages: (stages: PipelineStageDef[]) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
