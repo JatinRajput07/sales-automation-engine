@@ -63,13 +63,13 @@ export default function Contacts() {
                 return (
                   <tr key={c.id} className="border-t border-border hover:bg-surface-hover">
                     <td className="px-3 h-10">
-                      <div className="flex items-center gap-2">
+                      <Link to={`/sales/contacts/${c.id}`} className="flex items-center gap-2 hover:text-primary">
                         <div className="w-6 h-6 rounded-sm bg-mod-sales/15 text-mod-sales flex items-center justify-center font-mono text-2xs font-bold">{c.firstName[0]}{c.lastName[0]}</div>
                         <div>
                           <div className="font-medium">{c.firstName} {c.lastName} {c.isPrimary && <span className="text-warning text-2xs">★</span>}</div>
                           <div className="text-3xs text-muted-foreground">{c.department}</div>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-3 h-10">{c.designation}</td>
                     <td className="px-3 h-10">
