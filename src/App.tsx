@@ -43,12 +43,18 @@ import CompanyNew from "@/pages/sales/CompanyNew";
 import CompanyDetail from "@/pages/sales/CompanyDetail";
 import Contacts from "@/pages/sales/Contacts";
 import ContactNew from "@/pages/sales/ContactNew";
+import ContactDetail from "@/pages/sales/ContactDetail";
 import Pipeline from "@/pages/sales/Pipeline";
 import Deals from "@/pages/sales/Deals";
 import DealNew from "@/pages/sales/DealNew";
 import DealDetail from "@/pages/sales/DealDetail";
 import Activities from "@/pages/sales/Activities";
+import ActivityNew from "@/pages/sales/ActivityNew";
 import Forecasts from "@/pages/sales/Forecasts";
+import Proposals from "@/pages/sales/Proposals";
+import ProposalNew from "@/pages/sales/ProposalNew";
+import ProposalDetail from "@/pages/sales/ProposalDetail";
+import SalesAutomations from "@/pages/sales/Automations";
 import SalesReports from "@/pages/sales/Reports";
 import SalesSettings from "@/pages/sales/Settings";
 
