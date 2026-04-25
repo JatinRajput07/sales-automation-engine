@@ -651,6 +651,30 @@ export const useSalesStore = create<SalesState>()(
         });
         return createdId;
       },
+      addProposal: (p) => {
+        const id = `pr${Date.now()}`;
+        const now = new Date().toISOString().slice(0, 10);
+        let createdId = id;
+        set((st) => {
+          const number = `PROP-${new Date().getFullYear()}-${String(st.proposals.length + 1).padStart(3, "0")}`;
+          return { proposals: [{ ...p, id, number, createdAt: now }, ...st.proposals] };
+        });
+        return createdId;
+      },
+      updateProposal: (id, patch) => set((st) => ({
+        proposals: st.proposals.map(p => p.id === id ? { ...p, ...patch } : p),
+      })),
+      setProposalStatus: (id, status) => set((st) => ({
+        proposals: st.proposals.map(p => p.id === id ? {
+          ...p,
+          status,
+          sentDate: status === "Sent" && !p.sentDate ? new Date().toISOString().slice(0, 10) : p.sentDate,
+          viewedDate: status === "Viewed" && !p.viewedDate ? new Date().toISOString().slice(0, 10) : p.viewedDate,
+        } : p),
+      })),
+      toggleAutomation: (id) => set((st) => ({
+        automations: st.automations.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a),
+      })),
     }),
     { name: "crm-sales-state" }
   )

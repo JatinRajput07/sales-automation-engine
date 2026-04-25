@@ -95,6 +95,8 @@ export const MODULES: ModuleDef[] = [
       { label: "Activities", path: "/sales/activities" },
       { label: "Sources", path: "/sales/sources" },
       { label: "Forecasts", path: "/sales/forecasts" },
+      { label: "Proposals", path: "/sales/proposals" },
+      { label: "Automations", path: "/sales/automations" },
       { label: "Reports", path: "/sales/reports" },
       { label: "Settings", path: "/sales/settings" },
     ],
