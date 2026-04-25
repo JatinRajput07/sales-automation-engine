@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Sparkles, Plus, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import { useRef } from "react";
+import { ArrowLeft, Save, Sparkles, Plus, AlertCircle, CheckCircle2, ExternalLink, Paperclip, Link2, FileText, Trash2 } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -457,6 +458,61 @@ function Field({ label, error, children }: { label: string; error?: string; chil
       <Label className="text-2xs uppercase tracking-wider text-muted-foreground">{label}</Label>
       <div className="mt-1">{children}</div>
       {error && <p className="text-2xs text-destructive mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{error}</p>}
+    </div>
+  );
+}
+
+import type { Attachment } from "@/store/salesStore";
+
+function AttachmentField({ attachments, onChange }: { attachments: Attachment[]; onChange: (a: Attachment[]) => void }) {
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [linkName, setLinkName] = useState("");
+
+  function addFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    onChange([...attachments, { id: `at${Date.now()}`, kind: "file", name: f.name, url: URL.createObjectURL(f), size: f.size, uploadedAt: new Date().toISOString(), uploadedById: "p1" }]);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+  function addLink() {
+    if (!linkUrl) return;
+    onChange([...attachments, { id: `at${Date.now()}`, kind: "link", name: linkName || linkUrl, url: linkUrl, uploadedAt: new Date().toISOString(), uploadedById: "p1" }]);
+    setLinkOpen(false); setLinkUrl(""); setLinkName("");
+  }
+  function remove(id: string) {
+    onChange(attachments.filter(a => a.id !== id));
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <input ref={fileRef} type="file" className="hidden" onChange={addFile} />
+        <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => fileRef.current?.click()}>
+          <Paperclip className="w-3.5 h-3.5" /> Upload File
+        </Button>
+        <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => setLinkOpen(o => !o)}>
+          <Link2 className="w-3.5 h-3.5" /> Add Link
+        </Button>
+      </div>
+      {linkOpen && (
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 p-2 bg-surface-elevated/50 border border-border rounded-sm">
+          <Input className="h-8 text-xs" placeholder="https://…" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
+          <Input className="h-8 text-xs" placeholder="Display name (optional)" value={linkName} onChange={(e) => setLinkName(e.target.value)} />
+          <Button type="button" size="sm" className="h-8 text-xs" onClick={addLink}>Add</Button>
+        </div>
+      )}
+      <div className="space-y-1">
+        {attachments.map(a => (
+          <div key={a.id} className="flex items-center gap-2 p-2 bg-background border border-border rounded-sm text-xs">
+            {a.kind === "file" ? <FileText className="w-3.5 h-3.5 text-mod-sales" /> : <Link2 className="w-3.5 h-3.5 text-primary" />}
+            <span className="flex-1 truncate">{a.name}</span>
+            {a.size && <span className="text-3xs text-muted-foreground font-mono">{(a.size / 1024).toFixed(1)} KB</span>}
+            <button type="button" onClick={() => remove(a.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3 h-3" /></button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
