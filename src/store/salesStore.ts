@@ -144,6 +144,7 @@ export interface Contact {
 export interface SalesTask {
   id: string;
   leadId?: string;
+  dealId?: string;
   title: string;
   type: "Research" | "MVP Build" | "Proposal" | "Follow-up" | "Call" | "Meeting" | "Other";
   assigneeId: string;
@@ -151,6 +152,39 @@ export interface SalesTask {
   priority: LeadPriority;
   status: "Open" | "In Progress" | "Done";
 }
+
+export type DealStage = "Discovery" | "Qualification" | "Proposal" | "Negotiation" | "Closed Won" | "Closed Lost";
+export const ALL_DEAL_STAGES: DealStage[] = ["Discovery", "Qualification", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
+
+export interface Deal {
+  id: string;
+  title: string;
+  leadId?: string;
+  companyId?: string;
+  contactId?: string;
+  stage: DealStage;
+  value: number;
+  currency: Currency;
+  probability: number; // 0-100
+  expectedCloseDate: string;
+  ownerId: string;
+  source: SourcePlatform;
+  tags: string[];
+  notes?: string;
+  createdAt: string;
+  lastActivityAt: string;
+}
+
+export const dealStageVariant = (s: DealStage): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
+  switch (s) {
+    case "Discovery": return "info";
+    case "Qualification": return "purple";
+    case "Proposal": return "warning";
+    case "Negotiation": return "warning";
+    case "Closed Won": return "success";
+    case "Closed Lost": return "danger";
+  }
+};
 
 // ─── Seed ───────────────────────────────────────────────────────────
 const seedSources: SourceAccount[] = [
@@ -300,6 +334,31 @@ const seedContacts: Contact[] = Array.from({ length: 18 }).map((_, i) => {
   };
 });
 
+const seedDeals: Deal[] = Array.from({ length: 10 }).map((_, i) => {
+  const stage = ALL_DEAL_STAGES[i % ALL_DEAL_STAGES.length];
+  const co = seedCompanies[i % seedCompanies.length];
+  const value = [180000, 320000, 540000, 750000, 1100000, 1900000, 280000, 450000, 620000, 980000][i];
+  const closed = stage === "Closed Won" || stage === "Closed Lost";
+  return {
+    id: `d${i + 1}`,
+    title: `${TITLES[i % TITLES.length]} – ${co.name}`,
+    leadId: i < 6 ? `l${i + 1}` : undefined,
+    companyId: co.id,
+    contactId: seedContacts[i % seedContacts.length].id,
+    stage,
+    value,
+    currency: i % 4 === 0 ? "USD" : "INR",
+    probability: stage === "Closed Won" ? 100 : stage === "Closed Lost" ? 0 : [20, 40, 60, 80][i % 4],
+    expectedCloseDate: daysFromNow(closed ? -(i * 3) : (i + 1) * 7),
+    ownerId: pick(["p2", "p10", "p5"], i),
+    source: pick(["Upwork", "LinkedIn", "Referral", "Website"] as const, i),
+    tags: i % 2 === 0 ? ["enterprise"] : ["growth"],
+    notes: "",
+    createdAt: daysFromNow(-(i * 4 + 5)),
+    lastActivityAt: daysFromNow(-(i % 5)),
+  };
+});
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
@@ -307,6 +366,7 @@ interface SalesState {
   tasks: SalesTask[];
   companies: Company[];
   contacts: Contact[];
+  deals: Deal[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
@@ -319,6 +379,10 @@ interface SalesState {
   updateCompany: (id: string, patch: Partial<Company>) => void;
   addContact: (c: Omit<Contact, "id" | "createdAt">) => string;
   updateContact: (id: string, patch: Partial<Contact>) => void;
+  addDeal: (d: Omit<Deal, "id" | "createdAt" | "lastActivityAt">) => string;
+  updateDeal: (id: string, patch: Partial<Deal>) => void;
+  setDealStage: (id: string, stage: DealStage) => void;
+  convertLeadToDeal: (leadId: string) => string;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
@@ -345,6 +409,7 @@ export const useSalesStore = create<SalesState>()(
       tasks: seedTasks,
       companies: seedCompanies,
       contacts: seedContacts,
+      deals: seedDeals,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -398,6 +463,58 @@ export const useSalesStore = create<SalesState>()(
         return id;
       },
       updateContact: (id, patch) => set((st) => ({ contacts: st.contacts.map(c => c.id === id ? { ...c, ...patch } : c) })),
+      addDeal: (d) => {
+        const id = `d${Date.now()}`;
+        const now = new Date().toISOString().slice(0, 10);
+        set((st) => ({ deals: [{ ...d, id, createdAt: now, lastActivityAt: now }, ...st.deals] }));
+        return id;
+      },
+      updateDeal: (id, patch) => set((st) => ({
+        deals: st.deals.map(d => d.id === id ? { ...d, ...patch, lastActivityAt: new Date().toISOString().slice(0, 10) } : d),
+      })),
+      setDealStage: (id, stage) => set((st) => ({
+        deals: st.deals.map(d => d.id === id ? {
+          ...d,
+          stage,
+          probability: stage === "Closed Won" ? 100 : stage === "Closed Lost" ? 0 : d.probability,
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      convertLeadToDeal: (leadId) => {
+        const id = `d${Date.now()}`;
+        const now = new Date().toISOString().slice(0, 10);
+        let createdId = id;
+        set((st) => {
+          const l = st.leads.find(x => x.id === leadId);
+          if (!l) return {};
+          const newDeal: Deal = {
+            id,
+            title: l.title,
+            leadId: l.id,
+            companyId: st.companies.find(c => c.name === l.company)?.id,
+            stage: "Qualification",
+            value: l.estimatedValue ?? l.budget ?? 0,
+            currency: l.budgetCurrency,
+            probability: 40,
+            expectedCloseDate: l.followUpDate ?? now,
+            ownerId: l.assigneeId,
+            source: l.sourcePlatform,
+            tags: l.tags,
+            notes: "",
+            createdAt: now,
+            lastActivityAt: now,
+          };
+          return {
+            deals: [newDeal, ...st.deals],
+            leads: st.leads.map(x => x.id === leadId ? { ...x, status: "Qualified" as LeadStatus } : x),
+            activities: [
+              { id: `a${Date.now()}`, leadId, dealId: id, type: "Status Change", subject: `Converted to deal: ${l.title}`, date: now, byId: l.assigneeId },
+              ...st.activities,
+            ],
+          };
+        });
+        return createdId;
+      },
     }),
     { name: "crm-sales-state" }
   )
