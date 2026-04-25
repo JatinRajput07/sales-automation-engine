@@ -87,6 +87,12 @@ export default function LeadDetail() {
             <SelectContent>{PEOPLE.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
           </Select>
         </HeaderStat>
+        <HeaderStat label="Follow-up By">
+          <Select value={lead.followUpPersonId ?? ""} onValueChange={(v) => updateLead(lead.id, { followUpPersonId: v })}>
+            <SelectTrigger className="h-6 text-2xs px-2 w-36"><SelectValue placeholder="—" /></SelectTrigger>
+            <SelectContent>{PEOPLE.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+          </Select>
+        </HeaderStat>
         <div className="flex items-center gap-1.5 ml-auto">
           <span className="text-2xs text-muted-foreground uppercase tracking-wider">AI Score</span>
           <div className="w-16 h-1.5 bg-surface-hover rounded-full overflow-hidden">
