@@ -123,19 +123,33 @@ export default function LeadDetail() {
                 <DetailRow label="Budget" value={`${fmtVal} (${lead.budgetType})`} />
                 <DetailRow label="Timeline" value={lead.timeline ?? "—"} />
                 <DetailRow label="Complexity" value={lead.complexity} />
+                <DetailRow label="Tags" value={<div className="flex flex-wrap gap-1">{lead.tags.map(t => <span key={t} className="px-1.5 h-4 rounded-sm bg-surface-hover text-2xs">{t}</span>)}</div>} />
+                {lead.internalNotes && <DetailRow label="Internal Notes" value={<p className="text-2xs text-muted-foreground">{lead.internalNotes}</p>} />}
               </Card>
               <Card title="Source">
                 <DetailRow label="Platform" value={lead.sourcePlatform} />
                 <DetailRow label="Account" value={src ? <Link to={`/sales/sources/${src.id}`} className="text-primary hover:underline">{src.displayName}</Link> : "—"} />
                 <DetailRow label="Lead Type" value={lead.leadType} />
                 {lead.jobUrl && <DetailRow label="Job URL" value={<a href={lead.jobUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline flex items-center gap-1">{lead.jobUrl} <ExternalLink className="w-3 h-3" /></a>} />}
+                {lead.bidAmount && <DetailRow label="Bid Amount" value={`$${lead.bidAmount}`} />}
+                {lead.contractType && <DetailRow label="Contract Type" value={lead.contractType} />}
               </Card>
               <Card title="Contact">
                 <DetailRow label="Name" value={`${lead.firstName} ${lead.lastName}`} />
                 <DetailRow label="Email" value={lead.email} />
                 <DetailRow label="Phone" value={lead.phone ?? "—"} />
                 <DetailRow label="Designation" value={lead.designation ?? "—"} />
-                <DetailRow label="Company" value={`${lead.company} · ${lead.industry} · ${lead.country}`} />
+                <DetailRow label="Preferred" value={lead.preferredContact} />
+                <DetailRow label="Timezone" value={lead.timezone} />
+                <DetailRow label="Company" value={`${lead.company} · ${lead.industry} · ${lead.country}${lead.city ? " · " + lead.city : ""}`} />
+                {lead.companyWebsite && <DetailRow label="Website" value={<a href={lead.companyWebsite} target="_blank" rel="noreferrer" className="text-primary hover:underline">{lead.companyWebsite}</a>} />}
+                {lead.linkedin && <DetailRow label="LinkedIn" value={<a href={lead.linkedin} target="_blank" rel="noreferrer" className="text-primary hover:underline">{lead.linkedin}</a>} />}
+              </Card>
+              <Card title="Assignment">
+                <DetailRow label="Responsible" value={peopleById(lead.assigneeId)?.name ?? "—"} />
+                <DetailRow label="Follow-up Person" value={lead.followUpPersonId ? peopleById(lead.followUpPersonId)?.name : "—"} />
+                <DetailRow label="Follow-up Date" value={lead.followUpDate ?? "—"} />
+                <DetailRow label="Team" value={lead.team ?? "—"} />
               </Card>
             </div>
             <div className="space-y-3">
@@ -149,11 +163,7 @@ export default function LeadDetail() {
                   {(lead.estimatedValue ?? 0) > 300000 && <li className="text-success">✓ Budget &gt; ₹3L +1.2</li>}
                   {(lead.description?.length ?? 0) > 100 && <li className="text-success">✓ Detailed description +0.6</li>}
                   {lead.status === "New" && <li className="text-destructive">✗ No activity yet -0.8</li>}
-                  {lead.status !== "Proposal Sent" && lead.status !== "Won" && <li className="text-destructive">✗ Proposal not sent -1.0</li>}
                 </ul>
-                <p className="text-2xs text-muted-foreground mt-2 pt-2 border-t border-primary/20">
-                  <strong>Suggested next:</strong> {lead.status === "New" ? "Schedule discovery call" : lead.status === "Qualified" ? "Send proposal" : "Follow up on response"}
-                </p>
               </div>
               <Card title="Quick Actions">
                 <div className="grid grid-cols-2 gap-1.5">
@@ -163,15 +173,22 @@ export default function LeadDetail() {
                   <ActionBtn icon={Plus} label="Task" onClick={() => setTab("Tasks")} />
                 </div>
               </Card>
+              <NotesBlock notes={lead.notes ?? []} onAdd={(t) => addLeadNote(lead.id, t)} />
             </div>
           </div>
         )}
 
         {tab === "Activity" && <ActivityTab leadId={lead.id} activities={activities} onLog={(a) => logActivity({ ...a, leadId: lead.id })} />}
         {tab === "Tasks" && <TasksTab leadId={lead.id} tasks={tasks} onAdd={addTask} onStatus={setTaskStatus} />}
-        {tab === "Emails" && <EmptyTab icon={Mail} title="Emails" message="Email thread sync coming soon. Use Activity > Email to log emails for now." />}
-        {tab === "Files" && <EmptyTab icon={Paperclip} title="Files & Documents" message="Drag-drop or paste links to attach files." />}
-        {tab === "Proposals" && <EmptyTab icon={FileText} title="Proposals" message="No proposals yet. Create one from /sales/proposals (coming soon)." />}
+        {tab === "Notes" && <NotesBlock notes={lead.notes ?? []} onAdd={(t) => addLeadNote(lead.id, t)} />}
+        {tab === "Files" && (
+          <AttachmentsBlock
+            attachments={lead.attachments ?? []}
+            onAdd={(att) => addLeadAttachment(lead.id, att)}
+            onRemove={(attId) => removeLeadAttachment(lead.id, attId)}
+          />
+        )}
+        {tab === "Proposals" && <EmptyTab icon={FileText} title="Proposals" message="No proposals yet. Create one from /sales/proposals." />}
         {tab === "AI Insights" && <AIInsightsTab lead={lead} />}
       </div>
     </div>
