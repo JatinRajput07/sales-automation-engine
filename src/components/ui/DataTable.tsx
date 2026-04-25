@@ -10,8 +10,8 @@ export interface Column<T> {
 }
 
 interface DataTableProps<T> {
-  columns: Column<T>[];
   rows: T[];
+  columns: Column<T>[];
   rowKey: (row: T) => string;
   onRowClick?: (row: T) => void;
   empty?: ReactNode;
