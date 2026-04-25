@@ -43,12 +43,18 @@ import CompanyNew from "@/pages/sales/CompanyNew";
 import CompanyDetail from "@/pages/sales/CompanyDetail";
 import Contacts from "@/pages/sales/Contacts";
 import ContactNew from "@/pages/sales/ContactNew";
+import ContactDetail from "@/pages/sales/ContactDetail";
 import Pipeline from "@/pages/sales/Pipeline";
 import Deals from "@/pages/sales/Deals";
 import DealNew from "@/pages/sales/DealNew";
 import DealDetail from "@/pages/sales/DealDetail";
 import Activities from "@/pages/sales/Activities";
+import ActivityNew from "@/pages/sales/ActivityNew";
 import Forecasts from "@/pages/sales/Forecasts";
+import Proposals from "@/pages/sales/Proposals";
+import ProposalNew from "@/pages/sales/ProposalNew";
+import ProposalDetail from "@/pages/sales/ProposalDetail";
+import SalesAutomations from "@/pages/sales/Automations";
 import SalesReports from "@/pages/sales/Reports";
 import SalesSettings from "@/pages/sales/Settings";
 
@@ -82,6 +88,8 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/deals": Deals,
   "/sales/activities": Activities,
   "/sales/forecasts": Forecasts,
+  "/sales/proposals": Proposals,
+  "/sales/automations": SalesAutomations,
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
 };
@@ -113,8 +121,12 @@ const App = () => (
               <Route path="/sales/companies/new" element={<CompanyNew />} />
               <Route path="/sales/companies/:id" element={<CompanyDetail />} />
               <Route path="/sales/contacts/new" element={<ContactNew />} />
+              <Route path="/sales/contacts/:id" element={<ContactDetail />} />
               <Route path="/sales/deals/new" element={<DealNew />} />
               <Route path="/sales/deals/:id" element={<DealDetail />} />
+              <Route path="/sales/activities/new" element={<ActivityNew />} />
+              <Route path="/sales/proposals/new" element={<ProposalNew />} />
+              <Route path="/sales/proposals/:id" element={<ProposalDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
