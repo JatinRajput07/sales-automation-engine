@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { ArrowLeft, Save, Sparkles, Plus, AlertCircle, CheckCircle2, ExternalLink, Paperclip, Link2, FileText, Trash2 } from "lucide-react";
