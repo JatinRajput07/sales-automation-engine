@@ -359,7 +359,7 @@ const seedDeals: Deal[] = Array.from({ length: 10 }).map((_, i) => {
   };
 });
 
-
+interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
   activities: Activity[];
