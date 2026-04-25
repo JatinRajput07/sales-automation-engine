@@ -334,7 +334,32 @@ const seedContacts: Contact[] = Array.from({ length: 18 }).map((_, i) => {
   };
 });
 
-interface SalesState {
+const seedDeals: Deal[] = Array.from({ length: 10 }).map((_, i) => {
+  const stage = ALL_DEAL_STAGES[i % ALL_DEAL_STAGES.length];
+  const co = seedCompanies[i % seedCompanies.length];
+  const value = [180000, 320000, 540000, 750000, 1100000, 1900000, 280000, 450000, 620000, 980000][i];
+  const closed = stage === "Closed Won" || stage === "Closed Lost";
+  return {
+    id: `d${i + 1}`,
+    title: `${TITLES[i % TITLES.length]} – ${co.name}`,
+    leadId: i < 6 ? `l${i + 1}` : undefined,
+    companyId: co.id,
+    contactId: seedContacts[i % seedContacts.length].id,
+    stage,
+    value,
+    currency: i % 4 === 0 ? "USD" : "INR",
+    probability: stage === "Closed Won" ? 100 : stage === "Closed Lost" ? 0 : [20, 40, 60, 80][i % 4],
+    expectedCloseDate: daysFromNow(closed ? -(i * 3) : (i + 1) * 7),
+    ownerId: pick(["p2", "p10", "p5"], i),
+    source: pick(["Upwork", "LinkedIn", "Referral", "Website"] as const, i),
+    tags: i % 2 === 0 ? ["enterprise"] : ["growth"],
+    notes: "",
+    createdAt: daysFromNow(-(i * 4 + 5)),
+    lastActivityAt: daysFromNow(-(i % 5)),
+  };
+});
+
+
   sources: SourceAccount[];
   leads: Lead[];
   activities: Activity[];
