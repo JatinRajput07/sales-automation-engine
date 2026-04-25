@@ -88,6 +88,8 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/deals": Deals,
   "/sales/activities": Activities,
   "/sales/forecasts": Forecasts,
+  "/sales/proposals": Proposals,
+  "/sales/automations": SalesAutomations,
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
 };
