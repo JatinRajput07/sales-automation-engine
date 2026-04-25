@@ -3,9 +3,10 @@ import { ArrowLeft, FileText, Sparkles } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/ui/StatusPill";
-import { useSalesStore, ALL_DEAL_STAGES, dealStageVariant, type DealStage } from "@/store/salesStore";
+import { useSalesStore, ALL_DEAL_STAGES, dealStageVariant } from "@/store/salesStore";
 import { PEOPLE, inr } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { AttachmentsBlock, NotesBlock } from "@/components/sales/AttachmentsBlock";
 
 export default function DealDetail() {
   const { id } = useParams();
@@ -16,6 +17,9 @@ export default function DealDetail() {
   const company = useSalesStore(s => s.companies.find(c => c.id === deal?.companyId));
   const contact = useSalesStore(s => s.contacts.find(c => c.id === deal?.contactId));
   const lead = useSalesStore(s => s.leads.find(l => l.id === deal?.leadId));
+  const addDealNote = useSalesStore(s => s.addDealNote);
+  const addDealAttachment = useSalesStore(s => s.addDealAttachment);
+  const removeDealAttachment = useSalesStore(s => s.removeDealAttachment);
 
   if (!deal) return <div className="p-6 text-sm">Deal not found. <Link to="/sales/deals" className="text-primary">Back</Link></div>;
   const owner = PEOPLE.find(p => p.id === deal.ownerId);
@@ -75,6 +79,12 @@ export default function DealDetail() {
               </Link>
             </div>
           )}
+          <NotesBlock notes={deal.noteList ?? []} onAdd={(t) => addDealNote(deal.id, t)} />
+          <AttachmentsBlock
+            attachments={deal.attachments ?? []}
+            onAdd={(att) => addDealAttachment(deal.id, att)}
+            onRemove={(attId) => removeDealAttachment(deal.id, attId)}
+          />
         </div>
 
         <div className="space-y-3">
