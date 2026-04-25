@@ -409,6 +409,7 @@ export const useSalesStore = create<SalesState>()(
       tasks: seedTasks,
       companies: seedCompanies,
       contacts: seedContacts,
+      deals: seedDeals,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
