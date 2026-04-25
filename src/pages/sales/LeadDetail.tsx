@@ -460,7 +460,7 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 function HeaderStat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-2xs text-muted-foreground uppercase tracking-wider">{label}:</span>
+      <div className="text-2xs text-muted-foreground uppercase tracking-wider">{label}:</div>
       {children}
     </div>
   );
