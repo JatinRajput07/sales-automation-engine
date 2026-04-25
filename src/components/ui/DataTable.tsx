@@ -17,8 +17,7 @@ interface DataTableProps<T> {
   empty?: ReactNode;
 }
 
-export function DataTable<T,>(props: DataTableProps<NoInfer<T>> & { rows: T[] }) {
-  const { columns, rows, rowKey, onRowClick, empty } = props as DataTableProps<T>;
+export function DataTable<T = any>({ columns, rows, rowKey, onRowClick, empty }: DataTableProps<T>) {
   if (rows.length === 0 && empty) return <>{empty}</>;
   return (
     <div className="overflow-auto">
