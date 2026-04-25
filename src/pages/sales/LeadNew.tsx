@@ -365,7 +365,8 @@ export default function LeadNew() {
           </Section>
 
           {/* Section 6: Tags */}
-          <Section title="6. Tags & Classification">
+          {/* Section 7: Tags */}
+          <Section title="7. Tags & Classification">
             <Field label="Tags">
               <div className="flex gap-2">
                 <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())} placeholder="Add tag and press Enter" />
