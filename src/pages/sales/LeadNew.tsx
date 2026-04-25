@@ -337,16 +337,31 @@ export default function LeadNew() {
           </Section>
 
           {/* Section 5: Assignment */}
-          <Section title="5. Assignment">
+          <Section title="5. Assignment & Follow-up">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Assign To *" error={errors.assigneeId}>
+              <Field label="Lead Responsible Person *" error={errors.assigneeId}>
                 <Select value={form.assigneeId} onValueChange={(v) => setForm({ ...form, assigneeId: v })}>
-                  <SelectTrigger className="h-9"><SelectValue placeholder="Select assignee" /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Owner of this lead" /></SelectTrigger>
                   <SelectContent>{PEOPLE.filter(p => p.dept === "Sales" || p.dept === "Engineering").map(p => <SelectItem key={p.id} value={p.id}>{p.name} · {p.dept}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
+              <Field label="Follow-up Person">
+                <Select value={form.followUpPersonId} onValueChange={(v) => setForm({ ...form, followUpPersonId: v })}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Who handles follow-ups" /></SelectTrigger>
+                  <SelectContent>{PEOPLE.map(p => <SelectItem key={p.id} value={p.id}>{p.name} · {p.dept}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
               <Field label="Initial Contact Due"><Input type="date" value={form.followUpDate ?? ""} onChange={(e) => setForm({ ...form, followUpDate: e.target.value })} /></Field>
+              <Field label="Team"><Input value={form.team ?? ""} onChange={(e) => setForm({ ...form, team: e.target.value })} placeholder="Sales East" /></Field>
             </div>
+          </Section>
+
+          {/* Section 6: Attachments */}
+          <Section title="6. Attachments (links or files)">
+            <AttachmentField
+              attachments={form.attachments ?? []}
+              onChange={(atts) => setForm({ ...form, attachments: atts })}
+            />
           </Section>
 
           {/* Section 6: Tags */}
