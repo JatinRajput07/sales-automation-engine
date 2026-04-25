@@ -341,6 +341,7 @@ interface SalesState {
   tasks: SalesTask[];
   companies: Company[];
   contacts: Contact[];
+  deals: Deal[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
@@ -353,6 +354,10 @@ interface SalesState {
   updateCompany: (id: string, patch: Partial<Company>) => void;
   addContact: (c: Omit<Contact, "id" | "createdAt">) => string;
   updateContact: (id: string, patch: Partial<Contact>) => void;
+  addDeal: (d: Omit<Deal, "id" | "createdAt" | "lastActivityAt">) => string;
+  updateDeal: (id: string, patch: Partial<Deal>) => void;
+  setDealStage: (id: string, stage: DealStage) => void;
+  convertLeadToDeal: (leadId: string) => string;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
