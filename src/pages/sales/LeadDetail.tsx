@@ -11,9 +11,10 @@ import { Label } from "@/components/ui/label";
 import { useSalesStore, ALL_LEAD_STATUSES, leadStatusVariant, priorityDot, type LeadStatus, type LeadPriority } from "@/store/salesStore";
 import { PEOPLE, inr } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
+import { AttachmentsBlock, NotesBlock } from "@/components/sales/AttachmentsBlock";
 
 const peopleById = (id: string) => PEOPLE.find(p => p.id === id);
-const TABS = ["Overview", "Activity", "Tasks", "Emails", "Files", "Proposals", "AI Insights"] as const;
+const TABS = ["Overview", "Activity", "Tasks", "Notes", "Files", "Proposals", "AI Insights"] as const;
 type Tab = typeof TABS[number];
 
 export default function LeadDetail() {
@@ -28,6 +29,9 @@ export default function LeadDetail() {
   const logActivity = useSalesStore((s) => s.logActivity);
   const addTask = useSalesStore((s) => s.addTask);
   const setTaskStatus = useSalesStore((s) => s.setTaskStatus);
+  const addLeadNote = useSalesStore((s) => s.addLeadNote);
+  const addLeadAttachment = useSalesStore((s) => s.addLeadAttachment);
+  const removeLeadAttachment = useSalesStore((s) => s.removeLeadAttachment);
 
   const [tab, setTab] = useState<Tab>("Overview");
 
