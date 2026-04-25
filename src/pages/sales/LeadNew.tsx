@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRef } from "react";
 import { ArrowLeft, Save, Sparkles, Plus, AlertCircle, CheckCircle2, ExternalLink, Paperclip, Link2, FileText, Trash2 } from "lucide-react";
@@ -441,26 +441,29 @@ export default function LeadNew() {
   );
 }
 
-function Section({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) {
-  return (
-    <section className="bg-surface border border-border rounded-sm p-4 space-y-3">
+const Section = React.forwardRef<HTMLElement, { title: string; badge?: string; children: React.ReactNode }>(
+  ({ title, badge, children }, ref) => (
+    <section ref={ref} className="bg-surface border border-border rounded-sm p-4 space-y-3">
       <div className="flex items-center gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
         {badge && <span className="px-1.5 h-4 rounded-sm bg-primary/10 text-primary text-3xs font-medium">{badge}</span>}
       </div>
       {children}
     </section>
-  );
-}
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return (
-    <div>
+  )
+);
+Section.displayName = "Section";
+
+const Field = React.forwardRef<HTMLDivElement, { label: string; error?: string; children: React.ReactNode }>(
+  ({ label, error, children }, ref) => (
+    <div ref={ref}>
       <Label className="text-2xs uppercase tracking-wider text-muted-foreground">{label}</Label>
       <div className="mt-1">{children}</div>
       {error && <p className="text-2xs text-destructive mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{error}</p>}
     </div>
-  );
-}
+  )
+);
+Field.displayName = "Field";
 
 import type { Attachment } from "@/store/salesStore";
 
