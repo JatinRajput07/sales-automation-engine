@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, FileText, Sparkles } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -12,11 +13,15 @@ export default function DealDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const deal = useSalesStore(s => s.deals.find(d => d.id === id));
+  const deals = useSalesStore(s => s.deals);
+  const companies = useSalesStore(s => s.companies);
+  const contacts = useSalesStore(s => s.contacts);
+  const leads = useSalesStore(s => s.leads);
   const setStage = useSalesStore(s => s.setDealStage);
-  const company = useSalesStore(s => s.companies.find(c => c.id === deal?.companyId));
-  const contact = useSalesStore(s => s.contacts.find(c => c.id === deal?.contactId));
-  const lead = useSalesStore(s => s.leads.find(l => l.id === deal?.leadId));
+  const deal = useMemo(() => deals.find(d => d.id === id), [deals, id]);
+  const company = useMemo(() => companies.find(c => c.id === deal?.companyId), [companies, deal?.companyId]);
+  const contact = useMemo(() => contacts.find(c => c.id === deal?.contactId), [contacts, deal?.contactId]);
+  const lead = useMemo(() => leads.find(l => l.id === deal?.leadId), [leads, deal?.leadId]);
   const addDealNote = useSalesStore(s => s.addDealNote);
   const addDealAttachment = useSalesStore(s => s.addDealAttachment);
   const removeDealAttachment = useSalesStore(s => s.removeDealAttachment);

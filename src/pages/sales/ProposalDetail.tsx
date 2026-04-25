@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Download, Send, Eye } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -11,9 +12,11 @@ export default function ProposalDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const proposal = useSalesStore(s => s.proposals.find(p => p.id === id));
+  const proposals = useSalesStore(s => s.proposals);
+  const companies = useSalesStore(s => s.companies);
   const setStatus = useSalesStore(s => s.setProposalStatus);
-  const company = useSalesStore(s => s.companies.find(c => c.id === proposal?.companyId));
+  const proposal = useMemo(() => proposals.find(p => p.id === id), [proposals, id]);
+  const company = useMemo(() => companies.find(c => c.id === proposal?.companyId), [companies, proposal?.companyId]);
 
   if (!proposal) return <div className="p-6 text-sm">Proposal not found. <Link to="/sales/proposals" className="text-primary">Back</Link></div>;
   const by = PEOPLE.find(p => p.id === proposal.preparedById);
