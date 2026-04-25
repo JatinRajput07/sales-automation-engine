@@ -14,7 +14,7 @@ export default function Budget() {
       <ModuleHeader title="Budget" subtitle="Q1 2025 · ₹ allocations" accentVar="--mod-finance" />
       <FilterBar />
       <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {byDept.map(dept => {
+        {byDept.map((dept: string) => {
           const items = budgets.filter(b => b.department === dept);
           const allocated = items.reduce((a, b) => a + b.allocated, 0);
           const spent = items.reduce((a, b) => a + b.spent, 0);
