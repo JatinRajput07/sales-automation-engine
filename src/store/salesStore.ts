@@ -463,6 +463,58 @@ export const useSalesStore = create<SalesState>()(
         return id;
       },
       updateContact: (id, patch) => set((st) => ({ contacts: st.contacts.map(c => c.id === id ? { ...c, ...patch } : c) })),
+      addDeal: (d) => {
+        const id = `d${Date.now()}`;
+        const now = new Date().toISOString().slice(0, 10);
+        set((st) => ({ deals: [{ ...d, id, createdAt: now, lastActivityAt: now }, ...st.deals] }));
+        return id;
+      },
+      updateDeal: (id, patch) => set((st) => ({
+        deals: st.deals.map(d => d.id === id ? { ...d, ...patch, lastActivityAt: new Date().toISOString().slice(0, 10) } : d),
+      })),
+      setDealStage: (id, stage) => set((st) => ({
+        deals: st.deals.map(d => d.id === id ? {
+          ...d,
+          stage,
+          probability: stage === "Closed Won" ? 100 : stage === "Closed Lost" ? 0 : d.probability,
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      convertLeadToDeal: (leadId) => {
+        const id = `d${Date.now()}`;
+        const now = new Date().toISOString().slice(0, 10);
+        let createdId = id;
+        set((st) => {
+          const l = st.leads.find(x => x.id === leadId);
+          if (!l) return {};
+          const newDeal: Deal = {
+            id,
+            title: l.title,
+            leadId: l.id,
+            companyId: st.companies.find(c => c.name === l.company)?.id,
+            stage: "Qualification",
+            value: l.estimatedValue ?? l.budget ?? 0,
+            currency: l.budgetCurrency,
+            probability: 40,
+            expectedCloseDate: l.followUpDate ?? now,
+            ownerId: l.assigneeId,
+            source: l.sourcePlatform,
+            tags: l.tags,
+            notes: "",
+            createdAt: now,
+            lastActivityAt: now,
+          };
+          return {
+            deals: [newDeal, ...st.deals],
+            leads: st.leads.map(x => x.id === leadId ? { ...x, status: "Qualified" as LeadStatus } : x),
+            activities: [
+              { id: `a${Date.now()}`, leadId, dealId: id, type: "Status Change", subject: `Converted to deal: ${l.title}`, date: now, byId: l.assigneeId },
+              ...st.activities,
+            ],
+          };
+        });
+        return createdId;
+      },
     }),
     { name: "crm-sales-state" }
   )
