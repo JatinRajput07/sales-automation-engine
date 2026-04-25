@@ -95,6 +95,52 @@ export interface Activity {
   byId: string;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  website?: string;
+  industry: string;
+  size?: string;
+  country: string;
+  city?: string;
+  annualRevenue?: string;
+  foundedYear?: number;
+  description?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  gst?: string;
+  pan?: string;
+  paymentTerms?: "Net 15" | "Net 30" | "Net 45" | "Advance" | "Custom";
+  currency: Currency;
+  clientType: "Prospect" | "Lead" | "Active Client" | "Past Client" | "Partner";
+  accountTier?: "Enterprise" | "Mid-Market" | "SMB" | "Startup";
+  tags: string[];
+  accountManagerId?: string;
+  createdAt: string;
+}
+
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  designation?: string;
+  department?: string;
+  linkedin?: string;
+  twitter?: string;
+  companyId?: string;
+  isPrimary?: boolean;
+  preferredContact: "Email" | "WhatsApp" | "Phone" | "LinkedIn";
+  bestTime?: "Morning" | "Afternoon" | "Evening";
+  timezone: string;
+  language?: string;
+  notes?: string;
+  tags: string[];
+  createdAt: string;
+}
+
 export interface SalesTask {
   id: string;
   leadId?: string;
