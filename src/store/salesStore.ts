@@ -620,6 +620,8 @@ export const useSalesStore = create<SalesState>()(
       deals: seedDeals,
       proposals: seedProposals,
       automations: seedAutomations,
+      goals: seedGoals,
+      pipelineStages: seedPipelineStages,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -749,8 +751,56 @@ export const useSalesStore = create<SalesState>()(
       toggleAutomation: (id) => set((st) => ({
         automations: st.automations.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a),
       })),
+      addAutomation: (a) => {
+        const id = `au${Date.now()}`;
+        set((st) => ({ automations: [{ ...a, id, runs: 0 }, ...st.automations] }));
+        return id;
+      },
+      removeAutomation: (id) => set((st) => ({ automations: st.automations.filter(a => a.id !== id) })),
+      addLeadNote: (leadId, text, byId = "p1") => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? {
+          ...l,
+          notes: [...(l.notes ?? []), { id: `n${Date.now()}`, text, byId, createdAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : l),
+      })),
+      addLeadAttachment: (leadId, att) => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? {
+          ...l,
+          attachments: [...(l.attachments ?? []), { ...att, id: `at${Date.now()}`, uploadedAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : l),
+      })),
+      removeLeadAttachment: (leadId, attId) => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? { ...l, attachments: (l.attachments ?? []).filter(a => a.id !== attId) } : l),
+      })),
+      addDealNote: (dealId, text, byId = "p1") => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? {
+          ...d,
+          noteList: [...(d.noteList ?? []), { id: `n${Date.now()}`, text, byId, createdAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      addDealAttachment: (dealId, att) => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? {
+          ...d,
+          attachments: [...(d.attachments ?? []), { ...att, id: `at${Date.now()}`, uploadedAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      removeDealAttachment: (dealId, attId) => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? { ...d, attachments: (d.attachments ?? []).filter(a => a.id !== attId) } : d),
+      })),
+      addGoal: (g) => {
+        const id = `g${Date.now()}`;
+        set((st) => ({ goals: [...st.goals, { ...g, id }] }));
+        return id;
+      },
+      updateGoal: (id, patch) => set((st) => ({ goals: st.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
+      removeGoal: (id) => set((st) => ({ goals: st.goals.filter(g => g.id !== id) })),
+      setPipelineStages: (stages) => set(() => ({ pipelineStages: stages })),
     }),
-    { name: "crm-sales-state" }
+    { name: "crm-sales-state-v2" }
   )
 );
 
