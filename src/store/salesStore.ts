@@ -95,6 +95,52 @@ export interface Activity {
   byId: string;
 }
 
+export interface Company {
+  id: string;
+  name: string;
+  website?: string;
+  industry: string;
+  size?: string;
+  country: string;
+  city?: string;
+  annualRevenue?: string;
+  foundedYear?: number;
+  description?: string;
+  linkedin?: string;
+  twitter?: string;
+  github?: string;
+  gst?: string;
+  pan?: string;
+  paymentTerms?: "Net 15" | "Net 30" | "Net 45" | "Advance" | "Custom";
+  currency: Currency;
+  clientType: "Prospect" | "Lead" | "Active Client" | "Past Client" | "Partner";
+  accountTier?: "Enterprise" | "Mid-Market" | "SMB" | "Startup";
+  tags: string[];
+  accountManagerId?: string;
+  createdAt: string;
+}
+
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  designation?: string;
+  department?: string;
+  linkedin?: string;
+  twitter?: string;
+  companyId?: string;
+  isPrimary?: boolean;
+  preferredContact: "Email" | "WhatsApp" | "Phone" | "LinkedIn";
+  bestTime?: "Morning" | "Afternoon" | "Evening";
+  timezone: string;
+  language?: string;
+  notes?: string;
+  tags: string[];
+  createdAt: string;
+}
+
 export interface SalesTask {
   id: string;
   leadId?: string;
@@ -203,11 +249,64 @@ const seedTasks: SalesTask[] = [
   { id: "st3", leadId: "l2", title: "Draft initial proposal", type: "Proposal", assigneeId: "p10", dueDate: daysFromNow(3), priority: "High", status: "Open" },
 ];
 
+const CLIENT_TYPES: Company["clientType"][] = ["Prospect", "Lead", "Active Client", "Past Client", "Partner"];
+const TIERS: NonNullable<Company["accountTier"]>[] = ["Enterprise", "Mid-Market", "SMB", "Startup"];
+const seedCompanies: Company[] = COMPANIES.map((name, i) => ({
+  id: `co${i + 1}`,
+  name,
+  website: `https://${name.toLowerCase().replace(/[^a-z]/g, "")}.com`,
+  industry: pick(INDUSTRIES, i),
+  size: ["11-50", "51-200", "201-1000", "1000+"][i % 4],
+  country: pick(COUNTRIES, i),
+  city: ["Bengaluru", "Mumbai", "Delhi", "Pune", "Hyderabad"][i % 5],
+  annualRevenue: ["< ₹1 Cr", "₹1-10 Cr", "₹10-100 Cr", "> ₹100 Cr"][i % 4],
+  foundedYear: 2005 + (i % 18),
+  description: `${name} is a leading ${pick(INDUSTRIES, i).toLowerCase()} firm focused on innovation and customer outcomes.`,
+  linkedin: `https://linkedin.com/company/${name.toLowerCase().replace(/[^a-z]/g, "")}`,
+  gst: `27ABCDE${1000 + i}F1Z${i % 10}`,
+  pan: `ABCDE${1000 + i}F`,
+  paymentTerms: (["Net 15", "Net 30", "Net 45", "Advance"] as const)[i % 4],
+  currency: i % 5 === 0 ? "USD" : "INR",
+  clientType: CLIENT_TYPES[i % CLIENT_TYPES.length],
+  accountTier: TIERS[i % TIERS.length],
+  tags: i % 2 === 0 ? ["enterprise"] : ["growth"],
+  accountManagerId: pick(["p2", "p10"], i),
+  createdAt: daysFromNow(-(i * 10 + 30)),
+}));
+
+const TZS = ["IST", "PST", "EST", "GMT", "CET", "AEST"];
+const seedContacts: Contact[] = Array.from({ length: 18 }).map((_, i) => {
+  const fn = pick(FIRST, i);
+  const ln = pick(LAST, i + 5);
+  const co = seedCompanies[i % seedCompanies.length];
+  return {
+    id: `ct${i + 1}`,
+    firstName: fn,
+    lastName: ln,
+    email: `${fn.toLowerCase()}.${ln.toLowerCase()}@${co.name.toLowerCase().replace(/[^a-z]/g, "")}.com`,
+    phone: `+91 9${(800000000 + i * 7654321).toString().slice(0, 9)}`,
+    designation: ["CTO", "Product Manager", "Founder", "VP Engineering", "Head of Product", "CEO", "Engineering Manager"][i % 7],
+    department: ["Engineering", "Product", "Operations", "Marketing"][i % 4],
+    linkedin: `https://linkedin.com/in/${fn.toLowerCase()}${ln.toLowerCase()}`,
+    companyId: co.id,
+    isPrimary: i % 3 === 0,
+    preferredContact: (["Email", "WhatsApp", "Phone", "LinkedIn"] as const)[i % 4],
+    bestTime: (["Morning", "Afternoon", "Evening"] as const)[i % 3],
+    timezone: TZS[i % TZS.length],
+    language: i % 4 === 0 ? "Hindi" : "English",
+    notes: "",
+    tags: i % 2 === 0 ? ["decision-maker"] : ["technical"],
+    createdAt: daysFromNow(-(i * 5 + 10)),
+  };
+});
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
   activities: Activity[];
   tasks: SalesTask[];
+  companies: Company[];
+  contacts: Contact[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
@@ -216,6 +315,10 @@ interface SalesState {
   logActivity: (a: Omit<Activity, "id">) => string;
   addTask: (t: Omit<SalesTask, "id">) => string;
   setTaskStatus: (id: string, status: SalesTask["status"]) => void;
+  addCompany: (c: Omit<Company, "id" | "createdAt">) => string;
+  updateCompany: (id: string, patch: Partial<Company>) => void;
+  addContact: (c: Omit<Contact, "id" | "createdAt">) => string;
+  updateContact: (id: string, patch: Partial<Contact>) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
@@ -240,6 +343,8 @@ export const useSalesStore = create<SalesState>()(
       leads: seedLeads,
       activities: seedActivities,
       tasks: seedTasks,
+      companies: seedCompanies,
+      contacts: seedContacts,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -281,6 +386,18 @@ export const useSalesStore = create<SalesState>()(
         return id;
       },
       setTaskStatus: (id, status) => set((st) => ({ tasks: st.tasks.map(t => t.id === id ? { ...t, status } : t) })),
+      addCompany: (c) => {
+        const id = `co${Date.now()}`;
+        set((st) => ({ companies: [{ ...c, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.companies] }));
+        return id;
+      },
+      updateCompany: (id, patch) => set((st) => ({ companies: st.companies.map(c => c.id === id ? { ...c, ...patch } : c) })),
+      addContact: (c) => {
+        const id = `ct${Date.now()}`;
+        set((st) => ({ contacts: [{ ...c, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.contacts] }));
+        return id;
+      },
+      updateContact: (id, patch) => set((st) => ({ contacts: st.contacts.map(c => c.id === id ? { ...c, ...patch } : c) })),
     }),
     { name: "crm-sales-state" }
   )
