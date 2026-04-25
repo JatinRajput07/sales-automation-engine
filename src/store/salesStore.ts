@@ -33,6 +33,23 @@ export interface SourceAccount {
   createdAt: string;
 }
 
+export interface Attachment {
+  id: string;
+  kind: "file" | "link";
+  name: string;
+  url: string;
+  size?: number;
+  uploadedAt: string;
+  uploadedById: string;
+}
+
+export interface Note {
+  id: string;
+  text: string;
+  byId: string;
+  createdAt: string;
+}
+
 export interface Lead {
   id: string;
   sourcePlatform: SourcePlatform;
@@ -68,11 +85,14 @@ export interface Lead {
   complexity: "Low" | "Medium" | "High" | "Enterprise";
   priority: LeadPriority;
   estimatedValue?: number;
-  assigneeId: string;
+  assigneeId: string;            // responsible person
+  followUpPersonId?: string;     // follow-up owner
   team?: string;
   followUpDate?: string;
   tags: string[];
   internalNotes?: string;
+  attachments?: Attachment[];
+  notes?: Note[];
   status: LeadStatus;
   aiScore: number;
   createdAt: string;
@@ -168,11 +188,32 @@ export interface Deal {
   probability: number; // 0-100
   expectedCloseDate: string;
   ownerId: string;
+  followUpPersonId?: string;
   source: SourcePlatform;
   tags: string[];
   notes?: string;
+  attachments?: Attachment[];
+  noteList?: Note[];
   createdAt: string;
   lastActivityAt: string;
+}
+
+export interface SalesGoal {
+  id: string;
+  scope: "company" | "person";
+  ownerId?: string; // person id when scope === "person"
+  period: "monthly" | "quarterly";
+  periodLabel: string; // e.g. "2025-04" or "2025-Q2"
+  target: number;
+  currency: Currency;
+  achieved?: number;
+}
+
+export interface PipelineStageDef {
+  id: string;
+  name: string;
+  probability: number;
+  color: string;
 }
 
 export const dealStageVariant = (s: DealStage): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
@@ -487,6 +528,25 @@ const seedAutomations: Automation[] = [
   { id: "au12", name: "Daily sales digest (9 AM)", category: "Notification", trigger: "Every day at 9:00 AM", action: "Send digest to each salesperson", enabled: true, lastTriggered: daysFromNow(0), runs: 90 },
 ];
 
+const seedPipelineStages: PipelineStageDef[] = [
+  { id: "ps1", name: "Discovery", probability: 10, color: "info" },
+  { id: "ps2", name: "Qualification", probability: 30, color: "purple" },
+  { id: "ps3", name: "Proposal", probability: 55, color: "warning" },
+  { id: "ps4", name: "Negotiation", probability: 75, color: "warning" },
+  { id: "ps5", name: "Closed Won", probability: 100, color: "success" },
+  { id: "ps6", name: "Closed Lost", probability: 0, color: "danger" },
+];
+
+const currentMonth = new Date().toISOString().slice(0, 7);
+const currentQuarter = `${new Date().getFullYear()}-Q${Math.floor(new Date().getMonth() / 3) + 1}`;
+const seedGoals: SalesGoal[] = [
+  { id: "g1", scope: "company", period: "monthly", periodLabel: currentMonth, target: 5000000, currency: "INR", achieved: 3200000 },
+  { id: "g2", scope: "company", period: "quarterly", periodLabel: currentQuarter, target: 15000000, currency: "INR", achieved: 9800000 },
+  { id: "g3", scope: "person", ownerId: "p2", period: "monthly", periodLabel: currentMonth, target: 1500000, currency: "INR", achieved: 1180000 },
+  { id: "g4", scope: "person", ownerId: "p10", period: "monthly", periodLabel: currentMonth, target: 1200000, currency: "INR", achieved: 980000 },
+  { id: "g5", scope: "person", ownerId: "p2", period: "quarterly", periodLabel: currentQuarter, target: 4500000, currency: "INR", achieved: 3100000 },
+];
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
@@ -495,11 +555,19 @@ interface SalesState {
   companies: Company[];
   contacts: Contact[];
   deals: Deal[];
+  goals: SalesGoal[];
+  pipelineStages: PipelineStageDef[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
   updateLead: (id: string, patch: Partial<Lead>) => void;
   setLeadStatus: (id: string, status: LeadStatus, byId?: string) => void;
+  addLeadNote: (leadId: string, text: string, byId?: string) => void;
+  addLeadAttachment: (leadId: string, att: Omit<Attachment, "id" | "uploadedAt">) => void;
+  removeLeadAttachment: (leadId: string, attId: string) => void;
+  addDealNote: (dealId: string, text: string, byId?: string) => void;
+  addDealAttachment: (dealId: string, att: Omit<Attachment, "id" | "uploadedAt">) => void;
+  removeDealAttachment: (dealId: string, attId: string) => void;
   logActivity: (a: Omit<Activity, "id">) => string;
   addTask: (t: Omit<SalesTask, "id">) => string;
   setTaskStatus: (id: string, status: SalesTask["status"]) => void;
@@ -517,6 +585,12 @@ interface SalesState {
   updateProposal: (id: string, patch: Partial<Proposal>) => void;
   setProposalStatus: (id: string, status: ProposalStatus) => void;
   toggleAutomation: (id: string) => void;
+  addAutomation: (a: Omit<Automation, "id" | "runs">) => string;
+  removeAutomation: (id: string) => void;
+  addGoal: (g: Omit<SalesGoal, "id">) => string;
+  updateGoal: (id: string, patch: Partial<SalesGoal>) => void;
+  removeGoal: (id: string) => void;
+  setPipelineStages: (stages: PipelineStageDef[]) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
@@ -546,6 +620,8 @@ export const useSalesStore = create<SalesState>()(
       deals: seedDeals,
       proposals: seedProposals,
       automations: seedAutomations,
+      goals: seedGoals,
+      pipelineStages: seedPipelineStages,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -675,8 +751,56 @@ export const useSalesStore = create<SalesState>()(
       toggleAutomation: (id) => set((st) => ({
         automations: st.automations.map(a => a.id === id ? { ...a, enabled: !a.enabled } : a),
       })),
+      addAutomation: (a) => {
+        const id = `au${Date.now()}`;
+        set((st) => ({ automations: [{ ...a, id, runs: 0 }, ...st.automations] }));
+        return id;
+      },
+      removeAutomation: (id) => set((st) => ({ automations: st.automations.filter(a => a.id !== id) })),
+      addLeadNote: (leadId, text, byId = "p1") => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? {
+          ...l,
+          notes: [...(l.notes ?? []), { id: `n${Date.now()}`, text, byId, createdAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : l),
+      })),
+      addLeadAttachment: (leadId, att) => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? {
+          ...l,
+          attachments: [...(l.attachments ?? []), { ...att, id: `at${Date.now()}`, uploadedAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : l),
+      })),
+      removeLeadAttachment: (leadId, attId) => set((st) => ({
+        leads: st.leads.map(l => l.id === leadId ? { ...l, attachments: (l.attachments ?? []).filter(a => a.id !== attId) } : l),
+      })),
+      addDealNote: (dealId, text, byId = "p1") => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? {
+          ...d,
+          noteList: [...(d.noteList ?? []), { id: `n${Date.now()}`, text, byId, createdAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      addDealAttachment: (dealId, att) => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? {
+          ...d,
+          attachments: [...(d.attachments ?? []), { ...att, id: `at${Date.now()}`, uploadedAt: new Date().toISOString() }],
+          lastActivityAt: new Date().toISOString().slice(0, 10),
+        } : d),
+      })),
+      removeDealAttachment: (dealId, attId) => set((st) => ({
+        deals: st.deals.map(d => d.id === dealId ? { ...d, attachments: (d.attachments ?? []).filter(a => a.id !== attId) } : d),
+      })),
+      addGoal: (g) => {
+        const id = `g${Date.now()}`;
+        set((st) => ({ goals: [...st.goals, { ...g, id }] }));
+        return id;
+      },
+      updateGoal: (id, patch) => set((st) => ({ goals: st.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
+      removeGoal: (id) => set((st) => ({ goals: st.goals.filter(g => g.id !== id) })),
+      setPipelineStages: (stages) => set(() => ({ pipelineStages: stages })),
     }),
-    { name: "crm-sales-state" }
+    { name: "crm-sales-state-v2" }
   )
 );
 
