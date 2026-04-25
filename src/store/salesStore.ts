@@ -33,6 +33,23 @@ export interface SourceAccount {
   createdAt: string;
 }
 
+export interface Attachment {
+  id: string;
+  kind: "file" | "link";
+  name: string;
+  url: string;
+  size?: number;
+  uploadedAt: string;
+  uploadedById: string;
+}
+
+export interface Note {
+  id: string;
+  text: string;
+  byId: string;
+  createdAt: string;
+}
+
 export interface Lead {
   id: string;
   sourcePlatform: SourcePlatform;
@@ -68,11 +85,14 @@ export interface Lead {
   complexity: "Low" | "Medium" | "High" | "Enterprise";
   priority: LeadPriority;
   estimatedValue?: number;
-  assigneeId: string;
+  assigneeId: string;            // responsible person
+  followUpPersonId?: string;     // follow-up owner
   team?: string;
   followUpDate?: string;
   tags: string[];
   internalNotes?: string;
+  attachments?: Attachment[];
+  notes?: Note[];
   status: LeadStatus;
   aiScore: number;
   createdAt: string;
@@ -168,11 +188,32 @@ export interface Deal {
   probability: number; // 0-100
   expectedCloseDate: string;
   ownerId: string;
+  followUpPersonId?: string;
   source: SourcePlatform;
   tags: string[];
   notes?: string;
+  attachments?: Attachment[];
+  noteList?: Note[];
   createdAt: string;
   lastActivityAt: string;
+}
+
+export interface SalesGoal {
+  id: string;
+  scope: "company" | "person";
+  ownerId?: string; // person id when scope === "person"
+  period: "monthly" | "quarterly";
+  periodLabel: string; // e.g. "2025-04" or "2025-Q2"
+  target: number;
+  currency: Currency;
+  achieved?: number;
+}
+
+export interface PipelineStageDef {
+  id: string;
+  name: string;
+  probability: number;
+  color: string;
 }
 
 export const dealStageVariant = (s: DealStage): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
