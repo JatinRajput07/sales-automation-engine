@@ -144,6 +144,7 @@ export interface Contact {
 export interface SalesTask {
   id: string;
   leadId?: string;
+  dealId?: string;
   title: string;
   type: "Research" | "MVP Build" | "Proposal" | "Follow-up" | "Call" | "Meeting" | "Other";
   assigneeId: string;
@@ -151,6 +152,39 @@ export interface SalesTask {
   priority: LeadPriority;
   status: "Open" | "In Progress" | "Done";
 }
+
+export type DealStage = "Discovery" | "Qualification" | "Proposal" | "Negotiation" | "Closed Won" | "Closed Lost";
+export const ALL_DEAL_STAGES: DealStage[] = ["Discovery", "Qualification", "Proposal", "Negotiation", "Closed Won", "Closed Lost"];
+
+export interface Deal {
+  id: string;
+  title: string;
+  leadId?: string;
+  companyId?: string;
+  contactId?: string;
+  stage: DealStage;
+  value: number;
+  currency: Currency;
+  probability: number; // 0-100
+  expectedCloseDate: string;
+  ownerId: string;
+  source: SourcePlatform;
+  tags: string[];
+  notes?: string;
+  createdAt: string;
+  lastActivityAt: string;
+}
+
+export const dealStageVariant = (s: DealStage): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
+  switch (s) {
+    case "Discovery": return "info";
+    case "Qualification": return "purple";
+    case "Proposal": return "warning";
+    case "Negotiation": return "warning";
+    case "Closed Won": return "success";
+    case "Closed Lost": return "danger";
+  }
+};
 
 // ─── Seed ───────────────────────────────────────────────────────────
 const seedSources: SourceAccount[] = [
