@@ -359,6 +359,134 @@ const seedDeals: Deal[] = Array.from({ length: 10 }).map((_, i) => {
   };
 });
 
+// ─── Proposals ──────────────────────────────────────
+export type ProposalStatus = "Draft" | "Sent" | "Viewed" | "Accepted" | "Rejected" | "Expired";
+export const ALL_PROPOSAL_STATUSES: ProposalStatus[] = ["Draft", "Sent", "Viewed", "Accepted", "Rejected", "Expired"];
+export const proposalStatusVariant = (s: ProposalStatus): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
+  switch (s) {
+    case "Draft": return "neutral";
+    case "Sent": return "info";
+    case "Viewed": return "purple";
+    case "Accepted": return "success";
+    case "Rejected": return "danger";
+    case "Expired": return "warning";
+  }
+};
+
+export interface ProposalLineItem {
+  id: string;
+  item: string;
+  description: string;
+  qty: number;
+  unit: string;
+  rate: number;
+}
+
+export interface Proposal {
+  id: string;
+  number: string;
+  title: string;
+  leadId?: string;
+  dealId?: string;
+  companyId?: string;
+  preparedById: string;
+  proposalDate: string;
+  validUntil: string;
+  currency: Currency;
+  status: ProposalStatus;
+  executiveSummary: string;
+  approach: string;
+  scopeOfWork: string;
+  timeline: string;
+  terms: string;
+  lineItems: ProposalLineItem[];
+  taxPercent: number;
+  discount: number;
+  sentDate?: string;
+  viewedDate?: string;
+  createdAt: string;
+}
+
+const seedProposals: Proposal[] = [
+  {
+    id: "pr1", number: "PROP-2025-001", title: "E-commerce Web App Proposal",
+    leadId: "l1", dealId: "d1", companyId: seedCompanies[0].id,
+    preparedById: "p2", proposalDate: daysFromNow(-5), validUntil: daysFromNow(25),
+    currency: "INR", status: "Sent", sentDate: daysFromNow(-4),
+    executiveSummary: "We propose a modern, scalable e-commerce platform tailored to your business needs.",
+    approach: "Agile delivery in 4 sprints with weekly demos and continuous client feedback.",
+    scopeOfWork: "UI/UX design, frontend (React), backend API (Node.js), payment integration, deployment.",
+    timeline: "12 weeks: Discovery (1w), Design (3w), Dev (6w), Testing (1w), Launch (1w).",
+    terms: "50% advance, 25% mid-project, 25% on launch. 30 days post-launch support included.",
+    lineItems: [
+      { id: "li1", item: "UI/UX Design", description: "Figma screens for all pages", qty: 1, unit: "Project", rate: 80000 },
+      { id: "li2", item: "Frontend Development", description: "React.js development", qty: 1, unit: "Project", rate: 150000 },
+      { id: "li3", item: "Backend Development", description: "Node.js API & integrations", qty: 1, unit: "Project", rate: 120000 },
+    ],
+    taxPercent: 18, discount: 0, createdAt: daysFromNow(-5),
+  },
+  {
+    id: "pr2", number: "PROP-2025-002", title: "Mobile App Development",
+    leadId: "l2", companyId: seedCompanies[1].id,
+    preparedById: "p10", proposalDate: daysFromNow(-2), validUntil: daysFromNow(28),
+    currency: "INR", status: "Draft",
+    executiveSummary: "Cross-platform mobile app to extend your reach to mobile-first users.",
+    approach: "React Native for shared codebase across iOS and Android.",
+    scopeOfWork: "Design, development, testing, app store submission.",
+    timeline: "10 weeks total.",
+    terms: "Milestone-based payments.",
+    lineItems: [
+      { id: "li1", item: "App Design", description: "iOS + Android screens", qty: 1, unit: "Project", rate: 100000 },
+      { id: "li2", item: "Development", description: "React Native build", qty: 1, unit: "Project", rate: 250000 },
+    ],
+    taxPercent: 18, discount: 0, createdAt: daysFromNow(-2),
+  },
+  {
+    id: "pr3", number: "PROP-2025-003", title: "SaaS Dashboard Redesign",
+    leadId: "l3", companyId: seedCompanies[2].id,
+    preparedById: "p2", proposalDate: daysFromNow(-12), validUntil: daysFromNow(18),
+    currency: "USD", status: "Accepted", sentDate: daysFromNow(-11), viewedDate: daysFromNow(-10),
+    executiveSummary: "Modernize your B2B dashboard with intuitive UX and improved performance.",
+    approach: "Design-led process with data-driven UX decisions.",
+    scopeOfWork: "Audit, redesign, frontend rebuild.",
+    timeline: "8 weeks.",
+    terms: "Net 30 invoicing.",
+    lineItems: [
+      { id: "li1", item: "UX Audit & Design", description: "Full audit and Figma redesign", qty: 1, unit: "Project", rate: 8000 },
+      { id: "li2", item: "Frontend Rebuild", description: "React + Tailwind", qty: 1, unit: "Project", rate: 12000 },
+    ],
+    taxPercent: 0, discount: 0, createdAt: daysFromNow(-12),
+  },
+];
+
+// ─── Automations ────────────────────────────────────
+export interface Automation {
+  id: string;
+  name: string;
+  category: "Assignment" | "Follow-up" | "Status Change" | "Notification";
+  trigger: string;
+  condition?: string;
+  action: string;
+  enabled: boolean;
+  lastTriggered?: string;
+  runs: number;
+}
+
+const seedAutomations: Automation[] = [
+  { id: "au1", name: "Round-robin lead assignment", category: "Assignment", trigger: "New lead created", action: "Assign to next available rep in Sales team", enabled: true, lastTriggered: daysFromNow(-1), runs: 142 },
+  { id: "au2", name: "Source-based assignment (Upwork → Bhavya)", category: "Assignment", trigger: "New lead from Upwork", action: "Assign to Bhavya Sharma", enabled: true, lastTriggered: daysFromNow(0), runs: 48 },
+  { id: "au3", name: "High-value lead → Senior Sales", category: "Assignment", trigger: "Lead value > ₹5L", action: "Assign to Department Head", enabled: true, lastTriggered: daysFromNow(-3), runs: 12 },
+  { id: "au4", name: "First-contact reminder (4h)", category: "Follow-up", trigger: "Lead assigned", condition: "After 4 hours", action: "Notify assignee: 'New lead waiting'", enabled: true, lastTriggered: daysFromNow(0), runs: 89 },
+  { id: "au5", name: "Cold lead alert (5 days inactive)", category: "Follow-up", trigger: "No activity for 5 days", action: "Notify assignee + manager, raise priority", enabled: true, lastTriggered: daysFromNow(-1), runs: 34 },
+  { id: "au6", name: "Proposal follow-up (3 days)", category: "Follow-up", trigger: "Proposal sent + 3 days no response", action: "Notify assignee, AI-draft follow-up email", enabled: true, runs: 21 },
+  { id: "au7", name: "Lead Qualified → PMS research task", category: "Status Change", trigger: "Lead status = Qualified", action: "Create PMS task: 'Research & RnD'", enabled: true, lastTriggered: daysFromNow(-2), runs: 56 },
+  { id: "au8", name: "Deal Won → Project in Master Sheet", category: "Status Change", trigger: "Deal status = Won", action: "Create project, notify Finance, create FRD", enabled: true, lastTriggered: daysFromNow(-7), runs: 18 },
+  { id: "au9", name: "Deal Lost → Log reason & notify", category: "Status Change", trigger: "Deal status = Lost", action: "Require loss reason, notify manager", enabled: true, runs: 9 },
+  { id: "au10", name: "High-value lead alert (>₹10L)", category: "Notification", trigger: "Lead value > ₹10L", action: "Notify Sales Manager + Dept Head immediately", enabled: true, lastTriggered: daysFromNow(-4), runs: 7 },
+  { id: "au11", name: "AI score drop alert", category: "Notification", trigger: "AI score drops > 2 points in 24h", action: "Notify assignee", enabled: false, runs: 0 },
+  { id: "au12", name: "Daily sales digest (9 AM)", category: "Notification", trigger: "Every day at 9:00 AM", action: "Send digest to each salesperson", enabled: true, lastTriggered: daysFromNow(0), runs: 90 },
+];
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
