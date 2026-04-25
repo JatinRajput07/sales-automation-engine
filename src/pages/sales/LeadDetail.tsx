@@ -20,7 +20,7 @@ type Tab = typeof TABS[number];
 export default function LeadDetail() {
   const { id } = useParams();
   const { toast } = useToast();
-  const lead = useSalesStore((s) => s.leads.find(l => l.id === id));
+  const allLeads = useSalesStore((s) => s.leads);
   const sources = useSalesStore((s) => s.sources);
   const allActivities = useSalesStore((s) => s.activities);
   const allTasks = useSalesStore((s) => s.tasks);
@@ -34,6 +34,7 @@ export default function LeadDetail() {
   const removeLeadAttachment = useSalesStore((s) => s.removeLeadAttachment);
 
   const [tab, setTab] = useState<Tab>("Overview");
+  const lead = useMemo(() => allLeads.find(l => l.id === id), [allLeads, id]);
   const activities = useMemo(() => allActivities.filter(a => a.leadId === id), [allActivities, id]);
   const tasks = useMemo(() => allTasks.filter(t => t.leadId === id), [allTasks, id]);
 
