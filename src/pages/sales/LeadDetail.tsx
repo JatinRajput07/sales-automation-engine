@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Edit2, Archive, MoreHorizontal, Phone, Mail, Calendar, Plus, ListChecks, Sparkles, FileText, Paperclip, ExternalLink, Send, CheckCircle2 } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -22,8 +22,8 @@ export default function LeadDetail() {
   const { toast } = useToast();
   const lead = useSalesStore((s) => s.leads.find(l => l.id === id));
   const sources = useSalesStore((s) => s.sources);
-  const activities = useSalesStore((s) => s.activities.filter(a => a.leadId === id));
-  const tasks = useSalesStore((s) => s.tasks.filter(t => t.leadId === id));
+  const allActivities = useSalesStore((s) => s.activities);
+  const allTasks = useSalesStore((s) => s.tasks);
   const updateLead = useSalesStore((s) => s.updateLead);
   const setLeadStatus = useSalesStore((s) => s.setLeadStatus);
   const logActivity = useSalesStore((s) => s.logActivity);
@@ -34,6 +34,8 @@ export default function LeadDetail() {
   const removeLeadAttachment = useSalesStore((s) => s.removeLeadAttachment);
 
   const [tab, setTab] = useState<Tab>("Overview");
+  const activities = useMemo(() => allActivities.filter(a => a.leadId === id), [allActivities, id]);
+  const tasks = useMemo(() => allTasks.filter(t => t.leadId === id), [allTasks, id]);
 
   if (!lead) {
     return (
