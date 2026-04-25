@@ -343,6 +343,8 @@ export const useSalesStore = create<SalesState>()(
       leads: seedLeads,
       activities: seedActivities,
       tasks: seedTasks,
+      companies: seedCompanies,
+      contacts: seedContacts,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -384,6 +386,18 @@ export const useSalesStore = create<SalesState>()(
         return id;
       },
       setTaskStatus: (id, status) => set((st) => ({ tasks: st.tasks.map(t => t.id === id ? { ...t, status } : t) })),
+      addCompany: (c) => {
+        const id = `co${Date.now()}`;
+        set((st) => ({ companies: [{ ...c, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.companies] }));
+        return id;
+      },
+      updateCompany: (id, patch) => set((st) => ({ companies: st.companies.map(c => c.id === id ? { ...c, ...patch } : c) })),
+      addContact: (c) => {
+        const id = `ct${Date.now()}`;
+        set((st) => ({ contacts: [{ ...c, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.contacts] }));
+        return id;
+      },
+      updateContact: (id, patch) => set((st) => ({ contacts: st.contacts.map(c => c.id === id ? { ...c, ...patch } : c) })),
     }),
     { name: "crm-sales-state" }
   )
