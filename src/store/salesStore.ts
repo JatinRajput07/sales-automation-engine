@@ -511,6 +511,12 @@ interface SalesState {
   updateDeal: (id: string, patch: Partial<Deal>) => void;
   setDealStage: (id: string, stage: DealStage) => void;
   convertLeadToDeal: (leadId: string) => string;
+  proposals: Proposal[];
+  automations: Automation[];
+  addProposal: (p: Omit<Proposal, "id" | "createdAt" | "number">) => string;
+  updateProposal: (id: string, patch: Partial<Proposal>) => void;
+  setProposalStatus: (id: string, status: ProposalStatus) => void;
+  toggleAutomation: (id: string) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
@@ -538,6 +544,8 @@ export const useSalesStore = create<SalesState>()(
       companies: seedCompanies,
       contacts: seedContacts,
       deals: seedDeals,
+      proposals: seedProposals,
+      automations: seedAutomations,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
