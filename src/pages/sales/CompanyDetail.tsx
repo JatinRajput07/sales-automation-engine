@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Building2, Globe, MapPin, Mail, Phone } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
@@ -9,10 +10,14 @@ import { PEOPLE, inr } from "@/lib/mockData";
 export default function CompanyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const company = useSalesStore(s => s.companies.find(c => c.id === id));
-  const contacts = useSalesStore(s => s.contacts.filter(c => c.companyId === id));
-  const deals = useSalesStore(s => s.deals.filter(d => d.companyId === id));
-  const leads = useSalesStore(s => s.leads.filter(l => l.company === company?.name));
+  const companies = useSalesStore(s => s.companies);
+  const allContacts = useSalesStore(s => s.contacts);
+  const allDeals = useSalesStore(s => s.deals);
+  const allLeads = useSalesStore(s => s.leads);
+  const company = useMemo(() => companies.find(c => c.id === id), [companies, id]);
+  const contacts = useMemo(() => allContacts.filter(c => c.companyId === id), [allContacts, id]);
+  const deals = useMemo(() => allDeals.filter(d => d.companyId === id), [allDeals, id]);
+  const leads = useMemo(() => allLeads.filter(l => l.company === company?.name), [allLeads, company?.name]);
 
   if (!company) return <div className="p-6 text-sm">Company not found. <Link to="/sales/companies" className="text-primary">Back</Link></div>;
   const am = PEOPLE.find(p => p.id === company.accountManagerId);
