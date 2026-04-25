@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export interface Column<T> {
+export interface Column<T = any> {
   key: string;
   label: string;
   render?: (row: T) => ReactNode;
@@ -17,7 +17,8 @@ interface DataTableProps<T> {
   empty?: ReactNode;
 }
 
-export function DataTable<T>({ columns, rows, rowKey, onRowClick, empty }: DataTableProps<T>) {
+export function DataTable<T>(props: DataTableProps<T>) {
+  const { columns, rows, rowKey, onRowClick, empty } = props;
   if (rows.length === 0 && empty) return <>{empty}</>;
   return (
     <div className="overflow-auto">
