@@ -38,6 +38,17 @@ export default function ProposalNew() {
   const [aiBrief, setAiBrief] = useState("");
   const [generating, setGenerating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const templateFileRef = useRef<HTMLInputElement>(null);
+
+  // Company-template merge state
+  const [templateBytes, setTemplateBytes] = useState<Uint8Array | null>(null);
+  const [templateName, setTemplateName] = useState<string>("");
+  const [templatePages, setTemplatePages] = useState<number>(0);
+  const [preRange, setPreRange] = useState<string>("1-4");
+  const [postRange, setPostRange] = useState<string>("");
+  const [mergedUrl, setMergedUrl] = useState<string | null>(null);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [merging, setMerging] = useState(false);
 
   const [form, setForm] = useState({
     title: "", companyId: companies[0]?.id ?? "", leadId: "", dealId: "",
