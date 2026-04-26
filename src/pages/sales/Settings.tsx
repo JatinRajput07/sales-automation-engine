@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Workflow, Bell, Users, Layers, Target, Plus, Trash2, GripVertical } from "lucide-react";
-import { useSalesStore, type PipelineStageDef, type SalesGoal } from "@/store/salesStore";
+import { Sparkles, Workflow, Bell, Users, Layers, Target, Plus, Trash2, GripVertical, FileText, Upload } from "lucide-react";
+import { useSalesStore, type PipelineStageDef, type SalesGoal, type ProposalSettings } from "@/store/salesStore";
 import { PEOPLE, inr } from "@/lib/mockData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
