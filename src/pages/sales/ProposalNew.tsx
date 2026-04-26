@@ -256,6 +256,12 @@ export default function ProposalNew() {
                 <DropdownMenuItem onClick={() => handleExport("pdf")} className="text-xs gap-2"><FileType className="w-3.5 h-3.5 text-destructive" /> PDF Document<span className="ml-auto text-2xs text-muted-foreground">.pdf</span></DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("docx")} className="text-xs gap-2"><FileText className="w-3.5 h-3.5 text-primary" /> Word Document<span className="ml-auto text-2xs text-muted-foreground">.doc</span></DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("txt")} className="text-xs gap-2"><FileCode className="w-3.5 h-3.5 text-muted-foreground" /> Plain Text<span className="ml-auto text-2xs text-muted-foreground">.txt</span></DropdownMenuItem>
+                {templateBytes && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleMergedDownload} disabled={merging} className="text-xs gap-2"><Layers className="w-3.5 h-3.5 text-mod-sales" /> Merged with Template<span className="ml-auto text-2xs text-muted-foreground">.pdf</span></DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button size="sm" className="h-7 text-xs" onClick={saveDraft}>Save Draft</Button>
