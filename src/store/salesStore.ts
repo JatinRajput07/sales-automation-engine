@@ -633,6 +633,8 @@ interface SalesState {
   updateGoal: (id: string, patch: Partial<SalesGoal>) => void;
   removeGoal: (id: string) => void;
   setPipelineStages: (stages: PipelineStageDef[]) => void;
+  proposalSettings: ProposalSettings;
+  updateProposalSettings: (patch: Partial<ProposalSettings>) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
