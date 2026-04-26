@@ -48,6 +48,7 @@ export default function Settings() {
         {tab === "pipeline" && <PipelineEditor stages={stages} onChange={setStages} />}
         {tab === "goals" && <GoalsEditor goals={goals} onAdd={addGoal} onUpdate={updateGoal} onRemove={removeGoal} />}
         {tab === "team" && <TeamAccess />}
+        {tab === "proposal" && <ProposalBrandingEditor settings={proposalSettings} onChange={updateProposalSettings} />}
         {tab === "ai" && (
           <SettingsCard>
             <Toggle label="Auto-score new leads" defaultChecked />
