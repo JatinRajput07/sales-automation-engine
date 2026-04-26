@@ -843,6 +843,8 @@ export const useSalesStore = create<SalesState>()(
       updateGoal: (id, patch) => set((st) => ({ goals: st.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       removeGoal: (id) => set((st) => ({ goals: st.goals.filter(g => g.id !== id) })),
       setPipelineStages: (stages) => set(() => ({ pipelineStages: stages })),
+      proposalSettings: seedProposalSettings,
+      updateProposalSettings: (patch) => set((st) => ({ proposalSettings: { ...st.proposalSettings, ...patch } })),
     }),
     { name: "crm-sales-state-v2" }
   )
