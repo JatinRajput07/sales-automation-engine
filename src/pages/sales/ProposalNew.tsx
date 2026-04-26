@@ -209,6 +209,7 @@ export default function ProposalNew() {
     }
   }
 
+  function addRow() {
     setItems(it => [...it, { id: `n${Date.now()}`, item: "", description: "", qty: 1, unit: "Project", rate: 0 }]);
   }
   function updateRow(id: string, patch: Partial<ProposalLineItem>) {
