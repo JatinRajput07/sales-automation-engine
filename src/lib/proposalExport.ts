@@ -30,7 +30,7 @@ const hexToRgb = (hex: string): [number, number, number] => {
   return [parseInt(m[0], 16), parseInt(m[1], 16), parseInt(m[2], 16)];
 };
 
-export async function exportProposalPDF(data: ProposalExportData, settings: ProposalSettings) {
+export async function buildProposalPDFDoc(data: ProposalExportData, settings: ProposalSettings): Promise<jsPDF> {
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -207,7 +207,17 @@ export async function exportProposalPDF(data: ProposalExportData, settings: Prop
     addFooter();
   }
 
+  return doc;
+}
+
+export async function exportProposalPDF(data: ProposalExportData, settings: ProposalSettings) {
+  const doc = await buildProposalPDFDoc(data, settings);
   doc.save(`${data.title.replace(/[^a-z0-9]+/gi, "_")}.pdf`);
+}
+
+export async function buildProposalPDFBytes(data: ProposalExportData, settings: ProposalSettings): Promise<Uint8Array> {
+  const doc = await buildProposalPDFDoc(data, settings);
+  return new Uint8Array(doc.output("arraybuffer"));
 }
 
 // Minimal DOCX generation (Office Open XML, single-file approach using browser-native blob)
