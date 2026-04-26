@@ -846,7 +846,7 @@ export const useSalesStore = create<SalesState>()(
       proposalSettings: seedProposalSettings,
       updateProposalSettings: (patch) => set((st) => ({ proposalSettings: { ...st.proposalSettings, ...patch } })),
     }),
-    { name: "crm-sales-state-v2" }
+    { name: "crm-sales-state-v3" }
   )
 );
 
