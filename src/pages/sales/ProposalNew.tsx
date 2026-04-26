@@ -327,6 +327,54 @@ export default function ProposalNew() {
             </div>
           </div>
 
+          {/* Company Template Merge */}
+          <div className="bg-surface border border-border rounded-sm p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold"><Layers className="w-3.5 h-3.5 text-mod-sales" /> Company Template</div>
+              {templateBytes && (
+                <button onClick={clearTemplate} className="text-muted-foreground hover:text-destructive" title="Remove template"><X className="w-3 h-3" /></button>
+              )}
+            </div>
+            {!templateBytes ? (
+              <>
+                <Button type="button" variant="outline" size="sm" className="h-8 text-xs w-full gap-1.5" onClick={() => templateFileRef.current?.click()}>
+                  <FilePlus2 className="w-3.5 h-3.5" /> Upload Company PDF
+                </Button>
+                <p className="text-2xs text-muted-foreground leading-relaxed mt-2">Upload your existing company brochure / profile PDF. Select pages to wrap around the AI proposal.</p>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-1.5 rounded-sm bg-background border border-border">
+                  <FileType className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-2xs font-medium truncate">{templateName}</div>
+                    <div className="text-3xs text-muted-foreground">{templatePages} pages</div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-2xs text-muted-foreground">Pages BEFORE proposal</Label>
+                  <Input value={preRange} onChange={e => setPreRange(e.target.value)} placeholder="e.g. 1-4" className="h-7 text-xs font-mono" />
+                  <div className="text-3xs text-muted-foreground mt-0.5">Selected: {parsePageRange(preRange, templatePages).join(", ") || "none"}</div>
+                </div>
+                <div>
+                  <Label className="text-2xs text-muted-foreground">Pages AFTER proposal</Label>
+                  <Input value={postRange} onChange={e => setPostRange(e.target.value)} placeholder={`e.g. ${templatePages}`} className="h-7 text-xs font-mono" />
+                  <div className="text-3xs text-muted-foreground mt-0.5">Selected: {parsePageRange(postRange, templatePages).join(", ") || "none"}</div>
+                </div>
+                <div className="flex gap-1.5 pt-1">
+                  <Button type="button" size="sm" className="h-7 text-xs flex-1 gap-1" onClick={handleMergedPreview} disabled={merging}>
+                    <Eye className="w-3 h-3" /> {merging ? "…" : "Preview"}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs flex-1 gap-1" onClick={handleMergedDownload} disabled={merging}>
+                    <Download className="w-3 h-3" /> Export
+                  </Button>
+                </div>
+                <p className="text-3xs text-muted-foreground leading-relaxed">Final order: pre-pages → AI proposal → post-pages.</p>
+              </div>
+            )}
+            <input ref={templateFileRef} type="file" accept="application/pdf" className="hidden" onChange={handleTemplateUpload} />
+          </div>
+
           <div className="bg-surface border border-border rounded-sm p-3 text-2xs text-muted-foreground">
             <div className="flex justify-between"><span>Sections</span><span>{[form.executiveSummary, form.problemStatement, form.ourSolution, form.timeline].filter(s => s.trim()).length} / 4</span></div>
             <div className="flex justify-between"><span>Line items</span><span>{items.length}</span></div>
