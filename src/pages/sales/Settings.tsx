@@ -32,6 +32,7 @@ export default function Settings() {
           { k: "pipeline", l: "Pipeline & Stages", icon: Layers },
           { k: "goals", l: "Sales Goals", icon: Target },
           { k: "team", l: "Team & Access", icon: Users },
+          { k: "proposal", l: "Proposal Branding", icon: FileText },
           { k: "ai", l: "AI Assistant", icon: Sparkles },
           { k: "automations", l: "Automations", icon: Workflow },
           { k: "notifications", l: "Notifications", icon: Bell },
