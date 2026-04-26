@@ -135,7 +135,80 @@ export default function ProposalNew() {
     reader.readAsDataURL(file);
   }
 
-  function addRow() {
+  async function handleTemplateUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast({ title: "Only PDF files supported", variant: "destructive" });
+      return;
+    }
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const pages = await getPdfPageCount(buf);
+      setTemplateBytes(buf);
+      setTemplateName(file.name);
+      setTemplatePages(pages);
+      // Smart defaults: first 4 + last page
+      setPreRange(pages >= 4 ? "1-4" : `1-${pages}`);
+      setPostRange(pages > 4 ? `${pages}` : "");
+      toast({ title: "Template loaded", description: `${file.name} · ${pages} pages` });
+    } catch {
+      toast({ title: "Failed to read PDF", variant: "destructive" });
+    } finally {
+      if (templateFileRef.current) templateFileRef.current.value = "";
+    }
+  }
+
+  function clearTemplate() {
+    setTemplateBytes(null);
+    setTemplateName("");
+    setTemplatePages(0);
+    setPreRange("");
+    setPostRange("");
+  }
+
+  async function handleMergedPreview() {
+    setMerging(true);
+    try {
+      const data = buildExportData();
+      const bytes = await buildMergedProposalPDF({
+        templateBytes,
+        prePages: parsePageRange(preRange, templatePages),
+        postPages: parsePageRange(postRange, templatePages),
+        data,
+        settings,
+      });
+      if (mergedUrl) URL.revokeObjectURL(mergedUrl);
+      const url = bytesToBlobUrl(bytes);
+      setMergedUrl(url);
+      setMergeOpen(true);
+    } catch (err) {
+      toast({ title: "Merge failed", description: String(err), variant: "destructive" });
+    } finally {
+      setMerging(false);
+    }
+  }
+
+  async function handleMergedDownload() {
+    setMerging(true);
+    try {
+      const data = buildExportData();
+      const bytes = await buildMergedProposalPDF({
+        templateBytes,
+        prePages: parsePageRange(preRange, templatePages),
+        postPages: parsePageRange(postRange, templatePages),
+        data,
+        settings,
+      });
+      downloadBytes(bytes, `${(data.title || "proposal").replace(/[^a-z0-9]+/gi, "_")}_merged.pdf`);
+      toast({ title: "Merged PDF downloaded" });
+    } catch (err) {
+      toast({ title: "Merge failed", description: String(err), variant: "destructive" });
+    } finally {
+      setMerging(false);
+    }
+  }
+
     setItems(it => [...it, { id: `n${Date.now()}`, item: "", description: "", qty: 1, unit: "Project", rate: 0 }]);
   }
   function updateRow(id: string, patch: Partial<ProposalLineItem>) {
