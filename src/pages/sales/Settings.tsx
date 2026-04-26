@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, Workflow, Bell, Users, Layers, Target, Plus, Trash2, GripVertical } from "lucide-react";
-import { useSalesStore, type PipelineStageDef, type SalesGoal } from "@/store/salesStore";
+import { Sparkles, Workflow, Bell, Users, Layers, Target, Plus, Trash2, GripVertical, FileText, Upload } from "lucide-react";
+import { useSalesStore, type PipelineStageDef, type SalesGoal, type ProposalSettings } from "@/store/salesStore";
 import { PEOPLE, inr } from "@/lib/mockData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -17,8 +18,10 @@ export default function Settings() {
   const addGoal = useSalesStore(s => s.addGoal);
   const updateGoal = useSalesStore(s => s.updateGoal);
   const removeGoal = useSalesStore(s => s.removeGoal);
+  const proposalSettings = useSalesStore(s => s.proposalSettings);
+  const updateProposalSettings = useSalesStore(s => s.updateProposalSettings);
 
-  const [tab, setTab] = useState<"pipeline" | "goals" | "team" | "ai" | "automations" | "notifications">("pipeline");
+  const [tab, setTab] = useState<"pipeline" | "goals" | "team" | "proposal" | "ai" | "automations" | "notifications">("pipeline");
 
   return (
     <div className="flex flex-col min-h-full">
@@ -29,6 +32,7 @@ export default function Settings() {
           { k: "pipeline", l: "Pipeline & Stages", icon: Layers },
           { k: "goals", l: "Sales Goals", icon: Target },
           { k: "team", l: "Team & Access", icon: Users },
+          { k: "proposal", l: "Proposal Branding", icon: FileText },
           { k: "ai", l: "AI Assistant", icon: Sparkles },
           { k: "automations", l: "Automations", icon: Workflow },
           { k: "notifications", l: "Notifications", icon: Bell },
@@ -44,6 +48,7 @@ export default function Settings() {
         {tab === "pipeline" && <PipelineEditor stages={stages} onChange={setStages} />}
         {tab === "goals" && <GoalsEditor goals={goals} onAdd={addGoal} onUpdate={updateGoal} onRemove={removeGoal} />}
         {tab === "team" && <TeamAccess />}
+        {tab === "proposal" && <ProposalBrandingEditor settings={proposalSettings} onChange={updateProposalSettings} />}
         {tab === "ai" && (
           <SettingsCard>
             <Toggle label="Auto-score new leads" defaultChecked />
@@ -298,5 +303,128 @@ function Toggle({ label, defaultChecked }: { label: string; defaultChecked?: boo
       <span>{label}</span>
       <input type="checkbox" defaultChecked={defaultChecked} className="h-4 w-4 accent-primary" />
     </label>
+  );
+}
+
+function ProposalBrandingEditor({ settings, onChange }: { settings: ProposalSettings; onChange: (patch: Partial<ProposalSettings>) => void }) {
+  const { toast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { onChange({ brandLogo: reader.result as string }); toast({ title: "Logo uploaded" }); };
+    reader.readAsDataURL(file);
+  };
+
+  const sectionToggles: Array<{ key: keyof ProposalSettings["includeSections"]; label: string }> = [
+    { key: "executiveSummary", label: "Executive Summary" },
+    { key: "problemStatement", label: "Problem Statement" },
+    { key: "ourSolution", label: "Our Solution" },
+    { key: "timeline", label: "Timeline" },
+    { key: "pricing", label: "Investment / Pricing" },
+    { key: "terms", label: "Terms & Conditions" },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="bg-surface border border-border rounded-sm p-4 space-y-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider">Brand Identity</h3>
+        <div className="flex items-start gap-3">
+          <div className="w-20 h-20 rounded-sm border border-border bg-background flex items-center justify-center overflow-hidden">
+            {settings.brandLogo ? <img src={settings.brandLogo} className="max-w-full max-h-full object-contain" alt="logo" /> : <span className="text-2xs text-muted-foreground text-center px-2">No logo</span>}
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <Button type="button" variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => fileRef.current?.click()}><Upload className="w-3 h-3" /> Upload Logo</Button>
+            {settings.brandLogo && <Button type="button" variant="ghost" size="sm" className="h-6 text-2xs text-destructive" onClick={() => onChange({ brandLogo: undefined })}>Remove logo</Button>}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+            <p className="text-2xs text-muted-foreground">PNG/JPG/SVG up to ~1MB. Appears at the top of every generated proposal.</p>
+          </div>
+        </div>
+        <div>
+          <Label className="text-2xs">Brand Name</Label>
+          <Input value={settings.brandName} onChange={e => onChange({ brandName: e.target.value })} className="h-8 text-xs" />
+        </div>
+        <div>
+          <Label className="text-2xs">Tagline</Label>
+          <Input value={settings.brandTagline} onChange={e => onChange({ brandTagline: e.target.value })} className="h-8 text-xs" />
+        </div>
+        <div>
+          <Label className="text-2xs">Footer Text</Label>
+          <Input value={settings.footerText} onChange={e => onChange({ footerText: e.target.value })} className="h-8 text-xs" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <Label className="text-2xs">Primary Color</Label>
+            <div className="flex gap-1">
+              <input type="color" value={settings.primaryColor} onChange={e => onChange({ primaryColor: e.target.value })} className="h-8 w-10 rounded-sm border border-border bg-background cursor-pointer" />
+              <Input value={settings.primaryColor} onChange={e => onChange({ primaryColor: e.target.value })} className="h-8 text-xs font-mono" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-2xs">Accent Color</Label>
+            <div className="flex gap-1">
+              <input type="color" value={settings.accentColor} onChange={e => onChange({ accentColor: e.target.value })} className="h-8 w-10 rounded-sm border border-border bg-background cursor-pointer" />
+              <Input value={settings.accentColor} onChange={e => onChange({ accentColor: e.target.value })} className="h-8 text-xs font-mono" />
+            </div>
+          </div>
+        </div>
+        <div>
+          <Label className="text-2xs">Font Family</Label>
+          <Select value={settings.fontFamily} onValueChange={(v: any) => onChange({ fontFamily: v })}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Inter">Inter (Modern Sans)</SelectItem>
+              <SelectItem value="Helvetica">Helvetica (Classic Sans)</SelectItem>
+              <SelectItem value="Georgia">Georgia (Editorial Serif)</SelectItem>
+              <SelectItem value="Times">Times (Traditional Serif)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="bg-surface border border-border rounded-sm p-4 space-y-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wider">AI Defaults</h3>
+          <div>
+            <Label className="text-2xs">Default Tone</Label>
+            <Select value={settings.defaultTone} onValueChange={(v: any) => onChange({ defaultTone: v })}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Persuasive">Persuasive</SelectItem>
+                <SelectItem value="Professional">Professional</SelectItem>
+                <SelectItem value="Consultative">Consultative</SelectItem>
+                <SelectItem value="Bold">Bold</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-2xs">Default Validity (days)</Label>
+            <Input type="number" value={settings.defaultValidityDays} onChange={e => onChange({ defaultValidityDays: Number(e.target.value) })} className="h-8 text-xs" />
+          </div>
+          <div>
+            <Label className="text-2xs">Default Terms</Label>
+            <Textarea rows={3} value={settings.defaultTerms} onChange={e => onChange({ defaultTerms: e.target.value })} className="text-xs" />
+          </div>
+        </div>
+
+        <div className="bg-surface border border-border rounded-sm p-4 space-y-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-1">Sections to Include</h3>
+          <p className="text-2xs text-muted-foreground mb-2">Toggle which sections appear in generated proposals & exports.</p>
+          {sectionToggles.map(t => (
+            <label key={t.key} className="flex items-center justify-between text-xs cursor-pointer py-1.5 border-b border-border last:border-0">
+              <span>{t.label}</span>
+              <input
+                type="checkbox"
+                checked={settings.includeSections[t.key]}
+                onChange={e => onChange({ includeSections: { ...settings.includeSections, [t.key]: e.target.checked } })}
+                className="h-4 w-4 accent-primary"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

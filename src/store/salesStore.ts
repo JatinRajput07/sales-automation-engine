@@ -547,6 +547,48 @@ const seedGoals: SalesGoal[] = [
   { id: "g5", scope: "person", ownerId: "p2", period: "quarterly", periodLabel: currentQuarter, target: 4500000, currency: "INR", achieved: 3100000 },
 ];
 
+export interface ProposalSettings {
+  brandName: string;
+  brandTagline: string;
+  brandLogo?: string; // data URL
+  primaryColor: string; // hex
+  accentColor: string; // hex
+  fontFamily: "Inter" | "Helvetica" | "Georgia" | "Times";
+  footerText: string;
+  defaultTone: "Persuasive" | "Professional" | "Consultative" | "Bold";
+  includeSections: {
+    executiveSummary: boolean;
+    problemStatement: boolean;
+    ourSolution: boolean;
+    timeline: boolean;
+    pricing: boolean;
+    terms: boolean;
+  };
+  defaultTerms: string;
+  defaultValidityDays: number;
+}
+
+const seedProposalSettings: ProposalSettings = {
+  brandName: "Your Agency",
+  brandTagline: "Premium Digital Solutions",
+  brandLogo: undefined,
+  primaryColor: "#0F172A",
+  accentColor: "#2563EB",
+  fontFamily: "Inter",
+  footerText: "Confidential · Prepared exclusively for the recipient",
+  defaultTone: "Professional",
+  includeSections: {
+    executiveSummary: true,
+    problemStatement: true,
+    ourSolution: true,
+    timeline: true,
+    pricing: true,
+    terms: true,
+  },
+  defaultTerms: "Payment: 50% advance, 25% mid-project, 25% on launch. 30 days post-launch support included. IP transfers on final payment.",
+  defaultValidityDays: 30,
+};
+
 interface SalesState {
   sources: SourceAccount[];
   leads: Lead[];
@@ -591,6 +633,8 @@ interface SalesState {
   updateGoal: (id: string, patch: Partial<SalesGoal>) => void;
   removeGoal: (id: string) => void;
   setPipelineStages: (stages: PipelineStageDef[]) => void;
+  proposalSettings: ProposalSettings;
+  updateProposalSettings: (patch: Partial<ProposalSettings>) => void;
 }
 
 export function computeAiScore(l: Pick<Lead, "leadType" | "budget" | "budgetCurrency" | "description" | "complexity" | "priority">): number {
@@ -799,8 +843,10 @@ export const useSalesStore = create<SalesState>()(
       updateGoal: (id, patch) => set((st) => ({ goals: st.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       removeGoal: (id) => set((st) => ({ goals: st.goals.filter(g => g.id !== id) })),
       setPipelineStages: (stages) => set(() => ({ pipelineStages: stages })),
+      proposalSettings: seedProposalSettings,
+      updateProposalSettings: (patch) => set((st) => ({ proposalSettings: { ...st.proposalSettings, ...patch } })),
     }),
-    { name: "crm-sales-state-v2" }
+    { name: "crm-sales-state-v3" }
   )
 );
 
