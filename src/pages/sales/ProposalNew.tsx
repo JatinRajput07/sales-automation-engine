@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Plus, Trash2, Download, FileText, FileType, FileCode, Upload, Palette, Eye, Edit3 } from "lucide-react";
+import { Sparkles, Plus, Trash2, Download, FileText, FileType, FileCode, Upload, Palette, Eye, Edit3, FilePlus2, X, Layers } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSalesStore, type ProposalLineItem } from "@/store/salesStore";
 import { PEOPLE, daysFromNow, inr } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { exportProposalPDF, exportProposalDOCX, exportProposalTXT, generateAIProposal, type ProposalExportData } from "@/lib/proposalExport";
+import { buildMergedProposalPDF, getPdfPageCount, parsePageRange, downloadBytes, bytesToBlobUrl } from "@/lib/proposalMerge";
 
 type Mode = "edit" | "preview";
 
