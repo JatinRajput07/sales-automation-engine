@@ -18,8 +18,10 @@ export default function Settings() {
   const addGoal = useSalesStore(s => s.addGoal);
   const updateGoal = useSalesStore(s => s.updateGoal);
   const removeGoal = useSalesStore(s => s.removeGoal);
+  const proposalSettings = useSalesStore(s => s.proposalSettings);
+  const updateProposalSettings = useSalesStore(s => s.updateProposalSettings);
 
-  const [tab, setTab] = useState<"pipeline" | "goals" | "team" | "ai" | "automations" | "notifications">("pipeline");
+  const [tab, setTab] = useState<"pipeline" | "goals" | "team" | "proposal" | "ai" | "automations" | "notifications">("pipeline");
 
   return (
     <div className="flex flex-col min-h-full">
