@@ -404,6 +404,21 @@ export default function ProposalNew() {
           )}
         </div>
       </div>
+
+      {/* Merged PDF Preview Dialog */}
+      <Dialog open={mergeOpen} onOpenChange={(o) => { setMergeOpen(o); if (!o && mergedUrl) { URL.revokeObjectURL(mergedUrl); setMergedUrl(null); } }}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col">
+          <DialogHeader className="p-3 border-b border-border flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="text-sm flex items-center gap-2"><Layers className="w-4 h-4 text-mod-sales" /> Merged Proposal Preview</DialogTitle>
+            <Button size="sm" className="h-7 text-xs gap-1 mr-6" onClick={handleMergedDownload} disabled={merging}>
+              <Download className="w-3 h-3" /> Download PDF
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 bg-muted/40">
+            {mergedUrl && <iframe src={mergedUrl} className="w-full h-full border-0" title="Merged proposal preview" />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
