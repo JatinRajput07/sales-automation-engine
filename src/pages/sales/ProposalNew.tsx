@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Plus, Trash2, Download, FileText, FileType, FileCode, Upload, Palette, Eye, Edit3 } from "lucide-react";
+import { Sparkles, Plus, Trash2, Download, FileText, FileType, FileCode, Upload, Palette, Eye, Edit3, FilePlus2, X, Layers } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSalesStore, type ProposalLineItem } from "@/store/salesStore";
 import { PEOPLE, daysFromNow, inr } from "@/lib/mockData";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { exportProposalPDF, exportProposalDOCX, exportProposalTXT, generateAIProposal, type ProposalExportData } from "@/lib/proposalExport";
+import { buildMergedProposalPDF, getPdfPageCount, parsePageRange, downloadBytes, bytesToBlobUrl } from "@/lib/proposalMerge";
 
 type Mode = "edit" | "preview";
 
@@ -36,6 +38,17 @@ export default function ProposalNew() {
   const [aiBrief, setAiBrief] = useState("");
   const [generating, setGenerating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const templateFileRef = useRef<HTMLInputElement>(null);
+
+  // Company-template merge state
+  const [templateBytes, setTemplateBytes] = useState<Uint8Array | null>(null);
+  const [templateName, setTemplateName] = useState<string>("");
+  const [templatePages, setTemplatePages] = useState<number>(0);
+  const [preRange, setPreRange] = useState<string>("1-4");
+  const [postRange, setPostRange] = useState<string>("");
+  const [mergedUrl, setMergedUrl] = useState<string | null>(null);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [merging, setMerging] = useState(false);
 
   const [form, setForm] = useState({
     title: "", companyId: companies[0]?.id ?? "", leadId: "", dealId: "",
@@ -122,6 +135,80 @@ export default function ProposalNew() {
     reader.readAsDataURL(file);
   }
 
+  async function handleTemplateUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast({ title: "Only PDF files supported", variant: "destructive" });
+      return;
+    }
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const pages = await getPdfPageCount(buf);
+      setTemplateBytes(buf);
+      setTemplateName(file.name);
+      setTemplatePages(pages);
+      // Smart defaults: first 4 + last page
+      setPreRange(pages >= 4 ? "1-4" : `1-${pages}`);
+      setPostRange(pages > 4 ? `${pages}` : "");
+      toast({ title: "Template loaded", description: `${file.name} · ${pages} pages` });
+    } catch {
+      toast({ title: "Failed to read PDF", variant: "destructive" });
+    } finally {
+      if (templateFileRef.current) templateFileRef.current.value = "";
+    }
+  }
+
+  function clearTemplate() {
+    setTemplateBytes(null);
+    setTemplateName("");
+    setTemplatePages(0);
+    setPreRange("");
+    setPostRange("");
+  }
+
+  async function handleMergedPreview() {
+    setMerging(true);
+    try {
+      const data = buildExportData();
+      const bytes = await buildMergedProposalPDF({
+        templateBytes,
+        prePages: parsePageRange(preRange, templatePages),
+        postPages: parsePageRange(postRange, templatePages),
+        data,
+        settings,
+      });
+      if (mergedUrl) URL.revokeObjectURL(mergedUrl);
+      const url = bytesToBlobUrl(bytes);
+      setMergedUrl(url);
+      setMergeOpen(true);
+    } catch (err) {
+      toast({ title: "Merge failed", description: String(err), variant: "destructive" });
+    } finally {
+      setMerging(false);
+    }
+  }
+
+  async function handleMergedDownload() {
+    setMerging(true);
+    try {
+      const data = buildExportData();
+      const bytes = await buildMergedProposalPDF({
+        templateBytes,
+        prePages: parsePageRange(preRange, templatePages),
+        postPages: parsePageRange(postRange, templatePages),
+        data,
+        settings,
+      });
+      downloadBytes(bytes, `${(data.title || "proposal").replace(/[^a-z0-9]+/gi, "_")}_merged.pdf`);
+      toast({ title: "Merged PDF downloaded" });
+    } catch (err) {
+      toast({ title: "Merge failed", description: String(err), variant: "destructive" });
+    } finally {
+      setMerging(false);
+    }
+  }
+
   function addRow() {
     setItems(it => [...it, { id: `n${Date.now()}`, item: "", description: "", qty: 1, unit: "Project", rate: 0 }]);
   }
@@ -169,6 +256,12 @@ export default function ProposalNew() {
                 <DropdownMenuItem onClick={() => handleExport("pdf")} className="text-xs gap-2"><FileType className="w-3.5 h-3.5 text-destructive" /> PDF Document<span className="ml-auto text-2xs text-muted-foreground">.pdf</span></DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("docx")} className="text-xs gap-2"><FileText className="w-3.5 h-3.5 text-primary" /> Word Document<span className="ml-auto text-2xs text-muted-foreground">.doc</span></DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleExport("txt")} className="text-xs gap-2"><FileCode className="w-3.5 h-3.5 text-muted-foreground" /> Plain Text<span className="ml-auto text-2xs text-muted-foreground">.txt</span></DropdownMenuItem>
+                {templateBytes && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleMergedDownload} disabled={merging} className="text-xs gap-2"><Layers className="w-3.5 h-3.5 text-mod-sales" /> Merged with Template<span className="ml-auto text-2xs text-muted-foreground">.pdf</span></DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button size="sm" className="h-7 text-xs" onClick={saveDraft}>Save Draft</Button>
@@ -240,6 +333,54 @@ export default function ProposalNew() {
             </div>
           </div>
 
+          {/* Company Template Merge */}
+          <div className="bg-surface border border-border rounded-sm p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold"><Layers className="w-3.5 h-3.5 text-mod-sales" /> Company Template</div>
+              {templateBytes && (
+                <button onClick={clearTemplate} className="text-muted-foreground hover:text-destructive" title="Remove template"><X className="w-3 h-3" /></button>
+              )}
+            </div>
+            {!templateBytes ? (
+              <>
+                <Button type="button" variant="outline" size="sm" className="h-8 text-xs w-full gap-1.5" onClick={() => templateFileRef.current?.click()}>
+                  <FilePlus2 className="w-3.5 h-3.5" /> Upload Company PDF
+                </Button>
+                <p className="text-2xs text-muted-foreground leading-relaxed mt-2">Upload your existing company brochure / profile PDF. Select pages to wrap around the AI proposal.</p>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 p-1.5 rounded-sm bg-background border border-border">
+                  <FileType className="w-3.5 h-3.5 text-destructive flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-2xs font-medium truncate">{templateName}</div>
+                    <div className="text-3xs text-muted-foreground">{templatePages} pages</div>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-2xs text-muted-foreground">Pages BEFORE proposal</Label>
+                  <Input value={preRange} onChange={e => setPreRange(e.target.value)} placeholder="e.g. 1-4" className="h-7 text-xs font-mono" />
+                  <div className="text-3xs text-muted-foreground mt-0.5">Selected: {parsePageRange(preRange, templatePages).join(", ") || "none"}</div>
+                </div>
+                <div>
+                  <Label className="text-2xs text-muted-foreground">Pages AFTER proposal</Label>
+                  <Input value={postRange} onChange={e => setPostRange(e.target.value)} placeholder={`e.g. ${templatePages}`} className="h-7 text-xs font-mono" />
+                  <div className="text-3xs text-muted-foreground mt-0.5">Selected: {parsePageRange(postRange, templatePages).join(", ") || "none"}</div>
+                </div>
+                <div className="flex gap-1.5 pt-1">
+                  <Button type="button" size="sm" className="h-7 text-xs flex-1 gap-1" onClick={handleMergedPreview} disabled={merging}>
+                    <Eye className="w-3 h-3" /> {merging ? "…" : "Preview"}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-xs flex-1 gap-1" onClick={handleMergedDownload} disabled={merging}>
+                    <Download className="w-3 h-3" /> Export
+                  </Button>
+                </div>
+                <p className="text-3xs text-muted-foreground leading-relaxed">Final order: pre-pages → AI proposal → post-pages.</p>
+              </div>
+            )}
+            <input ref={templateFileRef} type="file" accept="application/pdf" className="hidden" onChange={handleTemplateUpload} />
+          </div>
+
           <div className="bg-surface border border-border rounded-sm p-3 text-2xs text-muted-foreground">
             <div className="flex justify-between"><span>Sections</span><span>{[form.executiveSummary, form.problemStatement, form.ourSolution, form.timeline].filter(s => s.trim()).length} / 4</span></div>
             <div className="flex justify-between"><span>Line items</span><span>{items.length}</span></div>
@@ -263,6 +404,21 @@ export default function ProposalNew() {
           )}
         </div>
       </div>
+
+      {/* Merged PDF Preview Dialog */}
+      <Dialog open={mergeOpen} onOpenChange={(o) => { setMergeOpen(o); if (!o && mergedUrl) { URL.revokeObjectURL(mergedUrl); setMergedUrl(null); } }}>
+        <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col">
+          <DialogHeader className="p-3 border-b border-border flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="text-sm flex items-center gap-2"><Layers className="w-4 h-4 text-mod-sales" /> Merged Proposal Preview</DialogTitle>
+            <Button size="sm" className="h-7 text-xs gap-1 mr-6" onClick={handleMergedDownload} disabled={merging}>
+              <Download className="w-3 h-3" /> Download PDF
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 bg-muted/40">
+            {mergedUrl && <iframe src={mergedUrl} className="w-full h-full border-0" title="Merged proposal preview" />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
