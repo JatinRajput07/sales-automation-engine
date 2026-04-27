@@ -118,8 +118,10 @@ export const MODULES: ModuleDef[] = [
     path: "/portfolio", colorVar: "--mod-portfolio",
     submenu: [
       { label: "Dashboard", path: "/portfolio" },
-      { label: "Clients", path: "/portfolio/clients" },
       { label: "Projects", path: "/portfolio/projects" },
+      { label: "Cover Letters", path: "/portfolio/cover-letters" },
+      { label: "Templates", path: "/portfolio/cover-letters/templates" },
+      { label: "Clients", path: "/portfolio/clients" },
       { label: "Health", path: "/portfolio/health" },
       { label: "Automations", path: "/portfolio/automations" },
     ],

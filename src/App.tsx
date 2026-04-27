@@ -62,6 +62,17 @@ import SalesSettings from "@/pages/sales/Settings";
 // HRMS
 import ModuleAccess from "@/pages/hrms/ModuleAccess";
 
+// Portfolio
+import PortfolioDashboard from "@/pages/portfolio/PortfolioDashboard";
+import PortfolioProjects from "@/pages/portfolio/Projects";
+import PortfolioProjectNew from "@/pages/portfolio/ProjectNew";
+import PortfolioProjectDetail from "@/pages/portfolio/ProjectDetail";
+import PortfolioPublicProject from "@/pages/portfolio/PublicProject";
+import CoverLetters from "@/pages/portfolio/CoverLetters";
+import CoverLetterNew from "@/pages/portfolio/CoverLetterNew";
+import CoverLetterDetail from "@/pages/portfolio/CoverLetterDetail";
+import CoverLetterTemplates from "@/pages/portfolio/CoverLetterTemplates";
+
 const queryClient = new QueryClient();
 
 // Custom routes that override the auto-PlaceholderPage
