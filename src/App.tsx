@@ -109,6 +109,10 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
   "/hrms/module-access": ModuleAccess,
+  "/portfolio": PortfolioDashboard,
+  "/portfolio/projects": PortfolioProjects,
+  "/portfolio/cover-letters": CoverLetters,
+  "/portfolio/cover-letters/templates": CoverLetterTemplates,
 };
 
 const App = () => (
@@ -147,7 +151,15 @@ const App = () => (
               <Route path="/sales/activities/new" element={<ActivityNew />} />
               <Route path="/sales/proposals/new" element={<ProposalNew />} />
               <Route path="/sales/proposals/:id" element={<ProposalDetail />} />
+
+              {/* Portfolio detail/new routes */}
+              <Route path="/portfolio/projects/new" element={<PortfolioProjectNew />} />
+              <Route path="/portfolio/projects/:id" element={<PortfolioProjectDetail />} />
+              <Route path="/portfolio/cover-letters/new" element={<CoverLetterNew />} />
+              <Route path="/portfolio/cover-letters/:id" element={<CoverLetterDetail />} />
             </Route>
+            {/* Public portfolio (outside CrmShell) */}
+            <Route path="/portfolio/p/:slug" element={<PortfolioPublicProject />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
