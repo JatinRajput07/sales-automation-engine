@@ -62,6 +62,17 @@ import SalesSettings from "@/pages/sales/Settings";
 // HRMS
 import ModuleAccess from "@/pages/hrms/ModuleAccess";
 
+// Portfolio
+import PortfolioDashboard from "@/pages/portfolio/PortfolioDashboard";
+import PortfolioProjects from "@/pages/portfolio/Projects";
+import PortfolioProjectNew from "@/pages/portfolio/ProjectNew";
+import PortfolioProjectDetail from "@/pages/portfolio/ProjectDetail";
+import PortfolioPublicProject from "@/pages/portfolio/PublicProject";
+import CoverLetters from "@/pages/portfolio/CoverLetters";
+import CoverLetterNew from "@/pages/portfolio/CoverLetterNew";
+import CoverLetterDetail from "@/pages/portfolio/CoverLetterDetail";
+import CoverLetterTemplates from "@/pages/portfolio/CoverLetterTemplates";
+
 const queryClient = new QueryClient();
 
 // Custom routes that override the auto-PlaceholderPage
@@ -98,6 +109,10 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
   "/hrms/module-access": ModuleAccess,
+  "/portfolio": PortfolioDashboard,
+  "/portfolio/projects": PortfolioProjects,
+  "/portfolio/cover-letters": CoverLetters,
+  "/portfolio/cover-letters/templates": CoverLetterTemplates,
 };
 
 const App = () => (
@@ -136,7 +151,15 @@ const App = () => (
               <Route path="/sales/activities/new" element={<ActivityNew />} />
               <Route path="/sales/proposals/new" element={<ProposalNew />} />
               <Route path="/sales/proposals/:id" element={<ProposalDetail />} />
+
+              {/* Portfolio detail/new routes */}
+              <Route path="/portfolio/projects/new" element={<PortfolioProjectNew />} />
+              <Route path="/portfolio/projects/:id" element={<PortfolioProjectDetail />} />
+              <Route path="/portfolio/cover-letters/new" element={<CoverLetterNew />} />
+              <Route path="/portfolio/cover-letters/:id" element={<CoverLetterDetail />} />
             </Route>
+            {/* Public portfolio (outside CrmShell) */}
+            <Route path="/portfolio/p/:slug" element={<PortfolioPublicProject />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
