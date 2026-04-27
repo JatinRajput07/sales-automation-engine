@@ -224,7 +224,7 @@ export default function DealDetail() {
                        <div className="text-xs text-muted-foreground mt-0.5">Created: {p.createdAt} · Valid until: {p.validUntil}</div>
                      </div>
                      <div className="text-right">
-                       <StatusPill variant={p.status === "Accepted" ? "success" : p.status === "Sent" ? "warning" : "default"}>{p.status}</StatusPill>
+                       <StatusPill variant={p.status === "Accepted" ? "success" : p.status === "Sent" ? "warning" : "neutral"}>{p.status}</StatusPill>
                        <div className="font-mono text-xs font-semibold mt-1">{inr(p.lineItems.reduce((acc, it) => acc + (it.qty * it.rate), 0))}</div>
                      </div>
                    </Link>
