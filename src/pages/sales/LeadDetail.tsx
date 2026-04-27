@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Edit2, Archive, MoreHorizontal, Phone, Mail, Calendar, Plus, ListChecks, Sparkles, FileText, Paperclip, ExternalLink, Send, CheckCircle2 } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/ui/StatusPill";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useSalesStore, ALL_LEAD_STATUSES, leadStatusVariant, priorityDot, type LeadStatus, type LeadPriority } from "@/store/salesStore";
 import { PEOPLE, inr } from "@/lib/mockData";
@@ -14,11 +15,12 @@ import { useToast } from "@/hooks/use-toast";
 import { AttachmentsBlock, NotesBlock } from "@/components/sales/AttachmentsBlock";
 
 const peopleById = (id: string) => PEOPLE.find(p => p.id === id);
-const TABS = ["Overview", "Activity", "Tasks", "Notes", "Files", "Proposals", "AI Insights"] as const;
+const TABS = ["Overview", "Activity", "Tasks", "Notes", "Files", "AI Insights"] as const;
 type Tab = typeof TABS[number];
 
 export default function LeadDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const allLeads = useSalesStore((s) => s.leads);
   const sources = useSalesStore((s) => s.sources);
@@ -32,8 +34,11 @@ export default function LeadDetail() {
   const addLeadNote = useSalesStore((s) => s.addLeadNote);
   const addLeadAttachment = useSalesStore((s) => s.addLeadAttachment);
   const removeLeadAttachment = useSalesStore((s) => s.removeLeadAttachment);
+  const convertLeadToDeal = useSalesStore((s) => s.convertLeadToDeal);
 
   const [tab, setTab] = useState<Tab>("Overview");
+  const [actionModal, setActionModal] = useState<"Call" | "Email" | "Meeting" | "Task" | null>(null);
+  const [actionForm, setActionForm] = useState<any>({});
   const lead = useMemo(() => allLeads.find(l => l.id === id), [allLeads, id]);
   const activities = useMemo(() => allActivities.filter(a => a.leadId === id), [allActivities, id]);
   const tasks = useMemo(() => allTasks.filter(t => t.leadId === id), [allTasks, id]);
@@ -61,7 +66,11 @@ export default function LeadDetail() {
           <>
             <Link to="/sales/leads"><Button variant="outline" size="sm" className="h-7 text-xs gap-1"><ArrowLeft className="w-3.5 h-3.5" /> Back</Button></Link>
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1"><Edit2 className="w-3.5 h-3.5" /> Edit</Button>
-            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => toast({ title: "Convert to Deal", description: "Deal flow stub — coming soon" })}>
+            <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => {
+              const dealId = convertLeadToDeal(lead.id);
+              toast({ title: "Lead converted to Deal" });
+              navigate(`/sales/deals/${dealId}`);
+            }}>
               Convert to Deal
             </Button>
             <Button variant="outline" size="sm" className="h-7 text-xs"><Archive className="w-3.5 h-3.5" /></Button>
@@ -170,10 +179,10 @@ export default function LeadDetail() {
               </div>
               <Card title="Quick Actions">
                 <div className="grid grid-cols-2 gap-1.5">
-                  <ActionBtn icon={Phone} label="Log Call" onClick={() => quickActivity("Call")} />
-                  <ActionBtn icon={Mail} label="Send Email" onClick={() => quickActivity("Email")} />
-                  <ActionBtn icon={Calendar} label="Meeting" onClick={() => quickActivity("Meeting")} />
-                  <ActionBtn icon={Plus} label="Task" onClick={() => setTab("Tasks")} />
+                  <ActionBtn icon={Phone} label="Log Call" onClick={() => openAction("Call")} />
+                  <ActionBtn icon={Mail} label="Send Email" onClick={() => openAction("Email")} />
+                  <ActionBtn icon={Calendar} label="Meeting" onClick={() => openAction("Meeting")} />
+                  <ActionBtn icon={Plus} label="Task" onClick={() => openAction("Task")} />
                 </div>
               </Card>
               <NotesBlock notes={lead.notes ?? []} onAdd={(t) => addLeadNote(lead.id, t)} />
@@ -191,18 +200,55 @@ export default function LeadDetail() {
             onRemove={(attId) => removeLeadAttachment(lead.id, attId)}
           />
         )}
-        {tab === "Proposals" && <EmptyTab icon={FileText} title="Proposals" message="No proposals yet. Create one from /sales/proposals." />}
         {tab === "AI Insights" && <AIInsightsTab lead={lead} />}
       </div>
+      <Dialog open={!!actionModal} onOpenChange={(o) => !o && setActionModal(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{actionModal === "Task" ? "Create Task" : `Log ${actionModal}`}</DialogTitle></DialogHeader>
+          <div className="space-y-3 py-2">
+            {actionModal === "Task" ? (
+              <>
+                <div><Label className="text-2xs">Title *</Label><Input className="h-8 text-xs" value={actionForm.title} onChange={e => setActionForm({...actionForm, title: e.target.value})} /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label className="text-2xs">Assignee</Label><Select value={actionForm.assigneeId} onValueChange={v => setActionForm({...actionForm, assigneeId: v})}><SelectTrigger className="h-8 text-xs"><SelectValue/></SelectTrigger><SelectContent>{PEOPLE.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
+                  <div><Label className="text-2xs">Due Date</Label><Input type="date" className="h-8 text-xs" value={actionForm.dueDate} onChange={e => setActionForm({...actionForm, dueDate: e.target.value})} /></div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div><Label className="text-2xs">Subject *</Label><Input className="h-8 text-xs" value={actionForm.subject} onChange={e => setActionForm({...actionForm, subject: e.target.value})} /></div>
+                <div><Label className="text-2xs">Description</Label><Textarea rows={3} className="text-xs" value={actionForm.description} onChange={e => setActionForm({...actionForm, description: e.target.value})} /></div>
+              </>
+            )}
+          </div>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => setActionModal(null)}>Cancel</Button><Button size="sm" onClick={submitAction}>Save</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 
-  function quickActivity(type: "Call" | "Email" | "Meeting") {
-    logActivity({
-      leadId: lead!.id, type, subject: `Quick ${type} logged`,
-      date: new Date().toISOString().slice(0, 10), byId: "p1",
-    });
-    toast({ title: `${type} logged` });
+  function openAction(type: "Call" | "Email" | "Meeting" | "Task") {
+    setActionModal(type);
+    if (type === "Task") {
+      setActionForm({ title: "", type: "Follow-up", assigneeId: lead!.assigneeId, dueDate: new Date(Date.now() + 86400000 * 3).toISOString().slice(0, 10), priority: "Medium" });
+    } else {
+      setActionForm({ type, subject: "", description: "", outcome: "Positive", date: new Date().toISOString().slice(0, 10) });
+    }
+  }
+
+  function submitAction() {
+    if (actionModal === "Task") {
+      if (!actionForm.title) return toast({ title: "Title required", variant: "destructive" });
+      addTask({ ...actionForm, leadId: lead!.id, status: "Open" });
+      toast({ title: "Task created" });
+      setTab("Tasks");
+    } else {
+      if (!actionForm.subject) return toast({ title: "Subject required", variant: "destructive" });
+      logActivity({ ...actionForm, leadId: lead!.id, byId: "p1" });
+      toast({ title: `${actionModal} logged` });
+      setTab("Activity");
+    }
+    setActionModal(null);
   }
 }
 

@@ -6,7 +6,7 @@ import {
 
 export type ModuleKey =
   | "wayofwork" | "finance" | "sysadmin" | "pms" | "mastersheet"
-  | "sales" | "frd" | "portfolio" | "staffing" | "canteen";
+  | "sales" | "frd" | "portfolio" | "staffing" | "canteen" | "hrms";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -88,7 +88,7 @@ export const MODULES: ModuleDef[] = [
     submenu: [
       { label: "Dashboard", path: "/sales" },
       { label: "Leads", path: "/sales/leads" },
-      { label: "Pipeline", path: "/sales/pipeline" },
+      // { label: "Pipeline", path: "/sales/pipeline" }, // merged into Deals
       { label: "Deals", path: "/sales/deals" },
       { label: "Contacts", path: "/sales/contacts" },
       { label: "Companies", path: "/sales/companies" },
@@ -149,6 +149,15 @@ export const MODULES: ModuleDef[] = [
       { label: "Feedback", path: "/canteen/feedback" },
       { label: "Reports", path: "/canteen/reports" },
       { label: "Automations", path: "/canteen/automations" },
+    ],
+  },
+  {
+    key: "hrms", name: "HRMS", short: "HR", icon: Users2,
+    path: "/hrms", colorVar: "--mod-hrms",
+    submenu: [
+      { label: "Dashboard", path: "/hrms" },
+      { label: "Directory", path: "/hrms/directory" },
+      { label: "Module Access", path: "/hrms/module-access" },
     ],
   },
 ];

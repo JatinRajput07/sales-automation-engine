@@ -216,6 +216,12 @@ export interface PipelineStageDef {
   color: string;
 }
 
+export interface LeadStageDef {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export const dealStageVariant = (s: DealStage): "info" | "purple" | "warning" | "success" | "danger" | "neutral" => {
   switch (s) {
     case "Discovery": return "info";
@@ -530,11 +536,22 @@ const seedAutomations: Automation[] = [
 
 const seedPipelineStages: PipelineStageDef[] = [
   { id: "ps1", name: "Discovery", probability: 10, color: "info" },
-  { id: "ps2", name: "Qualification", probability: 30, color: "purple" },
-  { id: "ps3", name: "Proposal", probability: 55, color: "warning" },
+  { id: "ps2", name: "Qualification", probability: 25, color: "purple" },
+  { id: "ps3", name: "Proposal", probability: 50, color: "warning" },
   { id: "ps4", name: "Negotiation", probability: 75, color: "warning" },
   { id: "ps5", name: "Closed Won", probability: 100, color: "success" },
   { id: "ps6", name: "Closed Lost", probability: 0, color: "danger" },
+];
+
+const seedLeadStages: LeadStageDef[] = [
+  { id: "ls1", name: "New", color: "info" },
+  { id: "ls2", name: "Contacted", color: "purple" },
+  { id: "ls3", name: "Qualified", color: "info" },
+  { id: "ls4", name: "Proposal Sent", color: "warning" },
+  { id: "ls5", name: "Negotiation", color: "warning" },
+  { id: "ls6", name: "Won", color: "success" },
+  { id: "ls7", name: "Lost", color: "danger" },
+  { id: "ls8", name: "On Hold", color: "neutral" },
 ];
 
 const currentMonth = new Date().toISOString().slice(0, 7);
@@ -599,6 +616,7 @@ interface SalesState {
   deals: Deal[];
   goals: SalesGoal[];
   pipelineStages: PipelineStageDef[];
+  leadStages: LeadStageDef[];
   addSource: (s: Omit<SourceAccount, "id" | "createdAt">) => string;
   updateSource: (id: string, patch: Partial<SourceAccount>) => void;
   addLead: (l: Omit<Lead, "id" | "createdAt" | "lastActivityAt" | "aiScore">) => string;
@@ -633,6 +651,7 @@ interface SalesState {
   updateGoal: (id: string, patch: Partial<SalesGoal>) => void;
   removeGoal: (id: string) => void;
   setPipelineStages: (stages: PipelineStageDef[]) => void;
+  setLeadStages: (stages: LeadStageDef[]) => void;
   proposalSettings: ProposalSettings;
   updateProposalSettings: (patch: Partial<ProposalSettings>) => void;
 }
@@ -666,6 +685,7 @@ export const useSalesStore = create<SalesState>()(
       automations: seedAutomations,
       goals: seedGoals,
       pipelineStages: seedPipelineStages,
+      leadStages: seedLeadStages,
       addSource: (s) => {
         const id = `s${Date.now()}`;
         set((st) => ({ sources: [{ ...s, id, createdAt: new Date().toISOString().slice(0, 10) }, ...st.sources] }));
@@ -843,6 +863,7 @@ export const useSalesStore = create<SalesState>()(
       updateGoal: (id, patch) => set((st) => ({ goals: st.goals.map(g => g.id === id ? { ...g, ...patch } : g) })),
       removeGoal: (id) => set((st) => ({ goals: st.goals.filter(g => g.id !== id) })),
       setPipelineStages: (stages) => set(() => ({ pipelineStages: stages })),
+      setLeadStages: (stages) => set(() => ({ leadStages: stages })),
       proposalSettings: seedProposalSettings,
       updateProposalSettings: (patch) => set((st) => ({ proposalSettings: { ...st.proposalSettings, ...patch } })),
     }),

@@ -10,6 +10,7 @@ import SystemAdminDashboard from "@/pages/sysadmin/SystemAdminDashboard";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 import NotFound from "./pages/NotFound.tsx";
 import { MODULES } from "@/lib/modules";
+import AuditLogs from "@/pages/sysadmin/AuditLogs";
 
 // WayOfWork
 import WowDashboard from "@/pages/wayofwork/WowDashboard";
@@ -44,7 +45,7 @@ import CompanyDetail from "@/pages/sales/CompanyDetail";
 import Contacts from "@/pages/sales/Contacts";
 import ContactNew from "@/pages/sales/ContactNew";
 import ContactDetail from "@/pages/sales/ContactDetail";
-import Pipeline from "@/pages/sales/Pipeline";
+// import Pipeline from "@/pages/sales/Pipeline"; // merged into Deals
 import Deals from "@/pages/sales/Deals";
 import DealNew from "@/pages/sales/DealNew";
 import DealDetail from "@/pages/sales/DealDetail";
@@ -58,12 +59,16 @@ import SalesAutomations from "@/pages/sales/Automations";
 import SalesReports from "@/pages/sales/Reports";
 import SalesSettings from "@/pages/sales/Settings";
 
+// HRMS
+import ModuleAccess from "@/pages/hrms/ModuleAccess";
+
 const queryClient = new QueryClient();
 
 // Custom routes that override the auto-PlaceholderPage
 const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales": SalesDashboard,
   "/system-admin": SystemAdminDashboard,
+  "/system-admin/audit": AuditLogs,
   "/wayofwork": WowDashboard,
   "/wayofwork/my-wows": MyWows,
   "/wayofwork/create": CreateWow,
@@ -84,7 +89,7 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/sources": Sources,
   "/sales/companies": Companies,
   "/sales/contacts": Contacts,
-  "/sales/pipeline": Pipeline,
+  // "/sales/pipeline": Pipeline, // merged into Deals
   "/sales/deals": Deals,
   "/sales/activities": Activities,
   "/sales/forecasts": Forecasts,
@@ -92,6 +97,7 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/automations": SalesAutomations,
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
+  "/hrms/module-access": ModuleAccess,
 };
 
 const App = () => (
@@ -100,7 +106,10 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{
+          v7_relativeSplatPath: true,
+          v7_startTransition: true,
+        }}>
           <Routes>
             <Route element={<CrmShell />}>
               <Route path="/" element={<Navigate to="/sales" replace />} />

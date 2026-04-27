@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, Plus, Trash2, Download, FileText, FileType, FileCode, Upload, Palette, Eye, Edit3, FilePlus2, X, Layers } from "lucide-react";
 import { ModuleHeader } from "@/components/ui/ModuleHeader";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,6 @@ export default function ProposalNew() {
   const { toast } = useToast();
   const addProposal = useSalesStore(s => s.addProposal);
   const companies = useSalesStore(s => s.companies);
-  const leads = useSalesStore(s => s.leads);
   const deals = useSalesStore(s => s.deals);
   const settings = useSalesStore(s => s.proposalSettings);
   const updateSettings = useSalesStore(s => s.updateProposalSettings);
@@ -50,8 +49,12 @@ export default function ProposalNew() {
   const [mergeOpen, setMergeOpen] = useState(false);
   const [merging, setMerging] = useState(false);
 
+  const [searchParams] = useSearchParams();
+  const initDealId = searchParams.get("dealId") || "";
+  const initCompanyId = deals.find(d => d.id === initDealId)?.companyId || companies[0]?.id || "";
+
   const [form, setForm] = useState({
-    title: "", companyId: companies[0]?.id ?? "", leadId: "", dealId: "",
+    title: "", companyId: initCompanyId, dealId: initDealId,
     preparedById: PEOPLE[0]?.id ?? "p1", proposalDate: daysFromNow(0), validUntil: daysFromNow(settings.defaultValidityDays),
     currency: "INR" as const,
     executiveSummary: "", problemStatement: "", ourSolution: "", timeline: "", terms: settings.defaultTerms,
@@ -223,7 +226,6 @@ export default function ProposalNew() {
     if (!form.title.trim()) return toast({ title: "Title required", variant: "destructive" });
     const id = addProposal({
       ...form,
-      leadId: form.leadId || undefined,
       dealId: form.dealId || undefined,
       status: "Draft",
       lineItems: items,
@@ -393,7 +395,7 @@ export default function ProposalNew() {
           {mode === "edit" ? (
             <EditForm
               form={form} set={set} items={items} addRow={addRow} updateRow={updateRow} removeRow={removeRow}
-              companies={companies} leads={leads} deals={deals}
+              companies={companies} deals={deals}
               subtotal={subtotal} tax={tax} total={total}
             />
           ) : (
@@ -423,18 +425,12 @@ export default function ProposalNew() {
   );
 }
 
-function EditForm({ form, set, items, addRow, updateRow, removeRow, companies, leads, deals, subtotal, tax, total }: any) {
+function EditForm({ form, set, items, addRow, updateRow, removeRow, companies, deals, subtotal, tax, total }: any) {
   return (
     <div className="space-y-3">
       <Section title="Proposal Info">
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2"><Label className="text-2xs">Title *</Label><Input value={form.title} onChange={e => set("title", e.target.value)} className="h-8 text-xs" /></div>
-          <div><Label className="text-2xs">Linked Lead</Label>
-            <select value={form.leadId} onChange={e => set("leadId", e.target.value)} className="h-8 w-full px-2 rounded-sm bg-background border border-border text-xs">
-              <option value="">— None —</option>
-              {leads.map((l: any) => <option key={l.id} value={l.id}>{l.title}</option>)}
-            </select>
-          </div>
           <div><Label className="text-2xs">Linked Deal</Label>
             <select value={form.dealId} onChange={e => set("dealId", e.target.value)} className="h-8 w-full px-2 rounded-sm bg-background border border-border text-xs">
               <option value="">— None —</option>
