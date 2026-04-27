@@ -436,6 +436,7 @@ export interface Proposal {
   leadId?: string;
   dealId?: string;
   companyId?: string;
+  portfolioProjectId?: string; // ← link to Portfolio module
   preparedById: string;
   proposalDate: string;
   validUntil: string;
