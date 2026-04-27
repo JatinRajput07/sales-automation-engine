@@ -32,18 +32,19 @@ export default function CoverLetterNew() {
   // Auto-fill body from template + project tokens
   useEffect(() => {
     if (!template) return;
-    const replaced = template.body
-      .replaceAll("{{recipient_name}}", recipientName || "[Recipient]")
-      .replaceAll("{{recipient_company}}", recipientCompany || project?.clientCompany || "[Company]")
-      .replaceAll("{{project_title}}", project?.title ?? "[Project]")
-      .replaceAll("{{related_project}}", project?.title ?? "[Related Project]")
-      .replaceAll("{{problem}}", project?.problemStatement ?? "[Problem]")
-      .replaceAll("{{value_prop}}", project?.shortDescription ?? "[Value]")
-      .replaceAll("{{agency_name}}", "Your Agency")
-      .replaceAll("{{sender_name}}", "Project Manager")
-      .replaceAll("{{metric}}", "3x")
-      .replaceAll("{{calendar_link}}", "https://cal.com/your-agency");
-    setBody(replaced);
+    const r = (s: string, k: string, v: string) => s.split(k).join(v);
+    let out = template.body;
+    out = r(out, "{{recipient_name}}", recipientName || "[Recipient]");
+    out = r(out, "{{recipient_company}}", recipientCompany || project?.clientCompany || "[Company]");
+    out = r(out, "{{project_title}}", project?.title ?? "[Project]");
+    out = r(out, "{{related_project}}", project?.title ?? "[Related Project]");
+    out = r(out, "{{problem}}", project?.problemStatement ?? "[Problem]");
+    out = r(out, "{{value_prop}}", project?.shortDescription ?? "[Value]");
+    out = r(out, "{{agency_name}}", "Your Agency");
+    out = r(out, "{{sender_name}}", "Project Manager");
+    out = r(out, "{{metric}}", "3x");
+    out = r(out, "{{calendar_link}}", "https://cal.com/your-agency");
+    setBody(out);
     if (!title && project) setTitle(`${project.title} — Cover Letter`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, projectId]);
