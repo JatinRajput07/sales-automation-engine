@@ -458,7 +458,7 @@ export interface Proposal {
 const seedProposals: Proposal[] = [
   {
     id: "pr1", number: "PROP-2025-001", title: "E-commerce Web App Proposal",
-    leadId: "l1", dealId: "d1", companyId: seedCompanies[0].id,
+    leadId: "l1", dealId: "d1", companyId: seedCompanies[0].id, portfolioProjectId: "pp1",
     preparedById: "p2", proposalDate: daysFromNow(-5), validUntil: daysFromNow(25),
     currency: "INR", status: "Sent", sentDate: daysFromNow(-4),
     executiveSummary: "We propose a modern, scalable e-commerce platform tailored to your business needs.",
