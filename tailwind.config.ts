@@ -73,6 +73,7 @@ export default {
           portfolio: "hsl(var(--mod-portfolio))",
           staffing: "hsl(var(--mod-staffing))",
           canteen: "hsl(var(--mod-canteen))",
+          hrms: "hsl(var(--mod-hrms))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
