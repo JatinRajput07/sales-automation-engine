@@ -158,8 +158,15 @@ export const MODULES: ModuleDef[] = [
     path: "/hrms", colorVar: "--mod-hrms",
     submenu: [
       { label: "Dashboard", path: "/hrms" },
-      { label: "Directory", path: "/hrms/directory" },
+      { label: "Departments", path: "/hrms/departments" },
+      { label: "Teams", path: "/hrms/teams" },
+      { label: "Employees", path: "/hrms/employees" },
+      { label: "Budget", path: "/hrms/budget" },
+      { label: "Leaves", path: "/hrms/leaves" },
+      { label: "Attendance", path: "/hrms/attendance" },
+      { label: "Help Desk", path: "/hrms/helpdesk" },
       { label: "Module Access", path: "/hrms/module-access" },
+      { label: "Settings", path: "/hrms/settings" },
     ],
   },
 ];
