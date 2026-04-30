@@ -60,7 +60,25 @@ import SalesReports from "@/pages/sales/Reports";
 import SalesSettings from "@/pages/sales/Settings";
 
 // HRMS
+import HrmsDashboard from "@/pages/hrms/HrmsDashboard";
+import Departments from "@/pages/hrms/Departments";
+import DepartmentNew from "@/pages/hrms/DepartmentNew";
+import DepartmentDetail from "@/pages/hrms/DepartmentDetail";
+import Teams from "@/pages/hrms/Teams";
+import TeamNew from "@/pages/hrms/TeamNew";
+import TeamDetail from "@/pages/hrms/TeamDetail";
+import Employees from "@/pages/hrms/Employees";
+import EmployeeNew from "@/pages/hrms/EmployeeNew";
+import EmployeeDetail from "@/pages/hrms/EmployeeDetail";
+import HrmsBudget from "@/pages/hrms/Budget";
+import BudgetRevisionRequest from "@/pages/hrms/BudgetRevisionRequest";
+import Leaves from "@/pages/hrms/Leaves";
+import LeaveApply from "@/pages/hrms/LeaveApply";
+import Attendance from "@/pages/hrms/Attendance";
+import HelpDesk from "@/pages/hrms/HelpDesk";
+import TicketNew from "@/pages/hrms/TicketNew";
 import ModuleAccess from "@/pages/hrms/ModuleAccess";
+import HrmsSettings from "@/pages/hrms/HrmsSettings";
 
 // Portfolio
 import PortfolioDashboard from "@/pages/portfolio/PortfolioDashboard";
@@ -108,7 +126,16 @@ const CUSTOM_ROUTES: Record<string, React.ComponentType> = {
   "/sales/automations": SalesAutomations,
   "/sales/reports": SalesReports,
   "/sales/settings": SalesSettings,
+  "/hrms": HrmsDashboard,
+  "/hrms/departments": Departments,
+  "/hrms/teams": Teams,
+  "/hrms/employees": Employees,
+  "/hrms/budget": HrmsBudget,
+  "/hrms/leaves": Leaves,
+  "/hrms/attendance": Attendance,
+  "/hrms/helpdesk": HelpDesk,
   "/hrms/module-access": ModuleAccess,
+  "/hrms/settings": HrmsSettings,
   "/portfolio": PortfolioDashboard,
   "/portfolio/projects": PortfolioProjects,
   "/portfolio/cover-letters": CoverLetters,
@@ -151,6 +178,17 @@ const App = () => (
               <Route path="/sales/activities/new" element={<ActivityNew />} />
               <Route path="/sales/proposals/new" element={<ProposalNew />} />
               <Route path="/sales/proposals/:id" element={<ProposalDetail />} />
+
+              {/* HRMS detail/new routes */}
+              <Route path="/hrms/departments/new" element={<DepartmentNew />} />
+              <Route path="/hrms/departments/:id" element={<DepartmentDetail />} />
+              <Route path="/hrms/teams/new" element={<TeamNew />} />
+              <Route path="/hrms/teams/:id" element={<TeamDetail />} />
+              <Route path="/hrms/employees/new" element={<EmployeeNew />} />
+              <Route path="/hrms/employees/:id" element={<EmployeeDetail />} />
+              <Route path="/hrms/budget/revision" element={<BudgetRevisionRequest />} />
+              <Route path="/hrms/leaves/apply" element={<LeaveApply />} />
+              <Route path="/hrms/helpdesk/new" element={<TicketNew />} />
 
               {/* Portfolio detail/new routes */}
               <Route path="/portfolio/projects/new" element={<PortfolioProjectNew />} />
