@@ -91,6 +91,23 @@ import CoverLetterNew from "@/pages/portfolio/CoverLetterNew";
 import CoverLetterDetail from "@/pages/portfolio/CoverLetterDetail";
 import CoverLetterTemplates from "@/pages/portfolio/CoverLetterTemplates";
 
+// Super Admin
+import { SuperAdminShell, SAGuard } from "@/components/superadmin/SuperAdminShell";
+import SuperAdminLogin from "@/pages/superadmin/SuperAdminLogin";
+import SADashboard from "@/pages/superadmin/SuperAdminDashboard";
+import SATenants from "@/pages/superadmin/Tenants";
+import SATenantNew from "@/pages/superadmin/TenantNew";
+import SATenantDetail from "@/pages/superadmin/TenantDetail";
+import SAPlans from "@/pages/superadmin/Plans";
+import SABilling from "@/pages/superadmin/Billing";
+import SADemo from "@/pages/superadmin/DemoRequests";
+import SADeals from "@/pages/superadmin/CustomDeals";
+import SAModules from "@/pages/superadmin/Modules";
+import SAAnnouncements from "@/pages/superadmin/Announcements";
+import SASupport from "@/pages/superadmin/Support";
+import SAAnalytics from "@/pages/superadmin/Analytics";
+import SASettings from "@/pages/superadmin/SuperAdminSettings";
+
 const queryClient = new QueryClient();
 
 // Custom routes that override the auto-PlaceholderPage
@@ -198,6 +215,26 @@ const App = () => (
             </Route>
             {/* Public portfolio (outside CrmShell) */}
             <Route path="/portfolio/p/:slug" element={<PortfolioPublicProject />} />
+
+            {/* Super Admin (separate shell + login) */}
+            <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+            <Route path="/super-admin" element={<SAGuard><SuperAdminShell /></SAGuard>}>
+              <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
+              <Route path="dashboard" element={<SADashboard />} />
+              <Route path="tenants" element={<SATenants />} />
+              <Route path="tenants/new" element={<SATenantNew />} />
+              <Route path="tenants/:id" element={<SATenantDetail />} />
+              <Route path="plans" element={<SAPlans />} />
+              <Route path="billing" element={<SABilling />} />
+              <Route path="demo-requests" element={<SADemo />} />
+              <Route path="custom-deals" element={<SADeals />} />
+              <Route path="modules" element={<SAModules />} />
+              <Route path="announcements" element={<SAAnnouncements />} />
+              <Route path="support" element={<SASupport />} />
+              <Route path="analytics" element={<SAAnalytics />} />
+              <Route path="settings" element={<SASettings />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
